@@ -11,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/medicinas")
+@CrossOrigin("*")
 public class MedicinaController {
 
     private final MedicinaService medicinaService;

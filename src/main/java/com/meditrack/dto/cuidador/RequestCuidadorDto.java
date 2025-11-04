@@ -13,4 +13,6 @@ public class RequestCuidadorDto {
     private String password;
 
     private String relacionConPaciente;
+
+
 }

@@ -2,6 +2,7 @@ package com.meditrack.service;
 
 import com.meditrack.dto.cuidador.RequestCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
+import com.meditrack.dto.paciente.ResponsePacienteDto;
 import com.meditrack.mapper.CuidadorMapper;
 import com.meditrack.model.Cuidador;
 import com.meditrack.model.User;
@@ -10,6 +11,7 @@ import com.meditrack.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,6 +39,19 @@ public class CuidadorService {
         Cuidador guardado = cuidadorRepository.save(cuidador);
 
         return CuidadorMapper.toResponse(guardado);
+    }
+
+    public List<ResponsePacienteDto> obtenerPacientesDeCuidador(String emailCuidador) {
+        Cuidador cuidador = cuidadorRepository.findByUserEmail(emailCuidador)
+                .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
+
+        return cuidador.getPacientes().stream()
+                .map(p -> new ResponsePacienteDto(
+                        p.getId(),
+                        p.getUser().getName(),
+                        p.getUser().getEmail()
+                ))
+                .toList();
     }
 
 

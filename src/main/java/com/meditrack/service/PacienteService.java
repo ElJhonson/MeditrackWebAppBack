@@ -49,18 +49,24 @@ public class PacienteService {
         return PacienteMapper.toResponse(guardado);
     }
 
-    public void vincularCuidador(Long id, String codigo) {
+    public void vincularCuidadorPorCorreo(String emailPaciente, String codigo) {
 
-        Paciente paciente = pacienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+        Paciente paciente = userRepo.findByEmail(emailPaciente)
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"))
+                .getPaciente();
 
         Cuidador cuidador = cuidadorRepository.findByCodigoVinculacion(codigo)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
 
         paciente.setCuidador(cuidador);
-        pacienteRepository.save(paciente);
 
+        cuidador.getPacientes().add(paciente);
+
+        pacienteRepository.save(paciente);
+        cuidadorRepository.save(cuidador);
     }
+
+
 
     public ResponsePacienteDto obtenerMisDatos(String emailUsuarioActual) {
         User user = userRepo.findByEmail(emailUsuarioActual)
