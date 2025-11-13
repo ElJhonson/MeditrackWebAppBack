@@ -3,6 +3,7 @@ package com.meditrack.controller;
 import com.meditrack.dto.cuidador.RequestCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
+import com.meditrack.model.User;
 import com.meditrack.service.CuidadorService;
 import com.meditrack.service.JWTService;
 import org.springframework.http.HttpStatus;
@@ -35,12 +36,21 @@ public class CuidadorController {
             @RequestHeader("Authorization") String token) {
 
         String jwt = token.replace("Bearer ", "");
-        String email = jwtService.extractCorreo(jwt);
-        List<ResponsePacienteDto> pacientes = cuidadorSrv.obtenerPacientesDeCuidador(email);
+        String phoneNumber = jwtService.extractPhoneNumber(jwt);
+        List<ResponsePacienteDto> pacientes = cuidadorSrv.obtenerPacientesDeCuidador(phoneNumber);
 
         return ResponseEntity.ok(pacientes);
     }
 
+    @GetMapping("/mis-datos")
+    public ResponseEntity<ResponseCuidadorDto> obtenerMisDatosCuidador(
+            @RequestHeader("Authorization") String token) {
 
+        String jwt = token.replace("Bearer ", "");
+        String phoneNumber = jwtService.extractPhoneNumber(jwt);
+
+        ResponseCuidadorDto dto = cuidadorSrv.obtenerMisDatos(phoneNumber);
+        return ResponseEntity.ok(dto);
+    }
 
 }

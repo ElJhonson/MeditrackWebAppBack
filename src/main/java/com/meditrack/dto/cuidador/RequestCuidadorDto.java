@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RequestCuidadorDto {
     private String name;
-    private String email;
+    private String phoneNumber;
     private String password;
 
     private String relacionConPaciente;

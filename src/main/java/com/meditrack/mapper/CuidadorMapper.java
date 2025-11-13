@@ -19,7 +19,7 @@ public class CuidadorMapper {
 
         User user = new User();
         user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhoneNumber());
         user.setPassword(encoder.encode(dto.getPassword()));
         user.setRol(Rol.CUIDADOR);
 
@@ -39,8 +39,9 @@ public class CuidadorMapper {
         ResponseCuidadorDto dto = new ResponseCuidadorDto();
         dto.setId(cuidador.getId());
         dto.setName(cuidador.getUser().getName());
-        dto.setEmail(cuidador.getUser().getEmail());
+        dto.setPhoneNumber(cuidador.getUser().getPhoneNumber());
         dto.setRelacionConPaciente(cuidador.getRelacionConPaciente());
+        dto.setCodigoVinculacion(cuidador.getCodigoVinculacion());
 
         if (cuidador.getPacientes() != null) {
             dto.setPacientes(

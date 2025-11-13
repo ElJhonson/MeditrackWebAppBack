@@ -42,7 +42,7 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             if(authHeader != null && authHeader.startsWith("Bearer")){
                 token = authHeader.substring(7);
-                username = jwtService.extractCorreo(token);
+                username = jwtService.extractPhoneNumber(token);
                 rol = jwtService.extractRol(token);
             }
         } catch (Exception e) {

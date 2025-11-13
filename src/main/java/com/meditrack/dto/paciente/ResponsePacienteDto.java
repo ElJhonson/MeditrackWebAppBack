@@ -12,10 +12,14 @@ import java.util.List;
 public class ResponsePacienteDto {
     private Long id;
     private String name;
-    private String email;
+    private String phoneNumber;
     private String cuidadorName;
     private List<String> cuidados;
 
-    public ResponsePacienteDto(Long id, String name, String email) {
+    public ResponsePacienteDto(Long id, String name, String phoneNumber) {
+        this.id = id;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
     }
+
 }

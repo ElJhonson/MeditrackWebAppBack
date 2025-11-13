@@ -26,10 +26,10 @@ public class MedicinaService {
         this.userRepository = userRepository;
     }
 
-    public ResponseMedicinaDto registrarMedicina(RequestMedicinaDto dto, String emailUsuarioActual) {
+    public ResponseMedicinaDto registrarMedicina(RequestMedicinaDto dto, String phoneNumber) {
 
 
-        User registradoPor = userRepository.findByEmail(emailUsuarioActual)
+        User registradoPor = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
@@ -54,8 +54,8 @@ public class MedicinaService {
         return MedicinaMapper.toResponse(guardada);
     }
 
-    public List<ResponseMedicinaDto> obtenerMedicinasDelPaciente(String email) {
-        User user = userRepository.findByEmail(email)
+    public List<ResponseMedicinaDto> obtenerMedicinasDelPaciente(String phoneNumber) {
+        User user = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (user.getRol() != Rol.PACIENTE) {
@@ -71,8 +71,8 @@ public class MedicinaService {
     }
 
 
-    public List<ResponseMedicinaDto> obtenerMedicinasDePaciente(Long pacienteId, String emailCuidador) {
-        User user = userRepository.findByEmail(emailCuidador)
+    public List<ResponseMedicinaDto> obtenerMedicinasDePaciente(Long pacienteId, String phonNumberCuidador) {
+        User user = userRepository.findByPhoneNumber(phonNumberCuidador)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (user.getRol() != Rol.CUIDADOR) {

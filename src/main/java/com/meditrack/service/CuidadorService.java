@@ -29,31 +29,40 @@ public class CuidadorService {
     }
 
     public ResponseCuidadorDto registrar(RequestCuidadorDto dto) {
-        Optional<User> existente = userRepo.findByEmail(dto.getEmail());
+        Optional<User> existente = userRepo.findByPhoneNumber(dto.getPhoneNumber());
         if (existente.isPresent()) {
-            throw new IllegalStateException("El correo ya está registrado");
+            throw new IllegalStateException("El número de teléfono ya está registrado");
         }
 
         Cuidador cuidador = CuidadorMapper.toEntity(dto);
+
+        User userGuardado = userRepo.save(cuidador.getUser());
+        cuidador.setUser(userGuardado);
 
         Cuidador guardado = cuidadorRepository.save(cuidador);
 
         return CuidadorMapper.toResponse(guardado);
     }
 
-    public List<ResponsePacienteDto> obtenerPacientesDeCuidador(String emailCuidador) {
-        Cuidador cuidador = cuidadorRepository.findByUserEmail(emailCuidador)
+    public List<ResponsePacienteDto> obtenerPacientesDeCuidador(String phoneNumberCuidador) {
+        Cuidador cuidador = cuidadorRepository.findByUserPhoneNumber(phoneNumberCuidador)
                 .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
 
         return cuidador.getPacientes().stream()
                 .map(p -> new ResponsePacienteDto(
                         p.getId(),
                         p.getUser().getName(),
-                        p.getUser().getEmail()
+                        p.getUser().getPhoneNumber()
                 ))
                 .toList();
     }
 
+    public ResponseCuidadorDto obtenerMisDatos(String phoneNumberCuidador) {
+        Cuidador cuidador = cuidadorRepository.findByUserPhoneNumber(phoneNumberCuidador)
+                .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
+
+        return CuidadorMapper.toResponse(cuidador);
+    }
 
 
 }

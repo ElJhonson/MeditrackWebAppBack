@@ -6,9 +6,13 @@ import com.meditrack.service.JWTService;
 import com.meditrack.service.PacienteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/pacientes")
@@ -23,28 +27,32 @@ public class PacienteController {
         this.jwtService = jwtService;
     }
 
+
     @PostMapping("/registro")
     public ResponseEntity<ResponsePacienteDto> registrar(@RequestBody RequestPacienteDto dto){
         ResponsePacienteDto response = pacienteSrv.registrar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("pacientes/vincular")
-    public ResponseEntity<String> vincularCuidador(
+    @PostMapping("/vincular-cuidador")
+    public ResponseEntity<Map<String, String>> vincularCuidador(
             @RequestParam String codigo,
             @RequestHeader("Authorization") String token) {
 
-        String jwt = token.replace("Bearer ", "");
-        String emailPaciente = jwtService.extractCorreo(jwt);
-        pacienteSrv.vincularCuidadorPorCorreo(emailPaciente, codigo);
+        String phoneNumber = jwtService.extractPhoneNumber(token.replace("Bearer ", ""));
+        pacienteSrv.vincularCuidador(phoneNumber, codigo);
 
-        return ResponseEntity.ok("Paciente vinculado correctamente al cuidador");
+        return ResponseEntity.ok(Map.of("mensaje", "Paciente vinculado correctamente al cuidador"));
     }
 
 
     @GetMapping("/misdatos")
-    public ResponseEntity<ResponsePacienteDto> obtenerMisDatos(@AuthenticationPrincipal String emailUsuarioActual) {
-        return ResponseEntity.ok(pacienteSrv.obtenerMisDatos(emailUsuarioActual));
+    public ResponseEntity<ResponsePacienteDto> obtenerMisDatos(Authentication authentication) {
+        // Extrae el número de teléfono del token JWT (sub)
+        String phoneNumber = authentication.getName();
+
+        ResponsePacienteDto response = pacienteSrv.obtenerMisDatos(phoneNumber);
+        return ResponseEntity.ok(response);
     }
 
 

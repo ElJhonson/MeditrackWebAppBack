@@ -21,7 +21,7 @@ public class Cuidador {
 
     private String relacionConPaciente;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "usuario_id")
     private User user;
 

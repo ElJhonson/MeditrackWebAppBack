@@ -1,9 +1,7 @@
 package com.meditrack.service;
 
-import com.meditrack.dto.cuidador.RequestCuidadorDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
-import com.meditrack.mapper.CuidadorMapper;
 import com.meditrack.mapper.PacienteMapper;
 import com.meditrack.model.Cuidador;
 import com.meditrack.model.Paciente;
@@ -11,6 +9,7 @@ import com.meditrack.model.User;
 import com.meditrack.repository.CuidadorRepository;
 import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -31,7 +30,7 @@ public class PacienteService {
     }
 
     public ResponsePacienteDto registrar(RequestPacienteDto dto) {
-        Optional<User> existente = userRepo.findByEmail(dto.getEmail());
+        Optional<User> existente = userRepo.findByPhoneNumber(dto.getPhoneNumber());
         if (existente.isPresent()) {
             throw new IllegalStateException("El correo ya está registrado");
         }
@@ -49,43 +48,37 @@ public class PacienteService {
         return PacienteMapper.toResponse(guardado);
     }
 
-    public void vincularCuidadorPorCorreo(String emailPaciente, String codigo) {
-
-        Paciente paciente = userRepo.findByEmail(emailPaciente)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"))
-                .getPaciente();
+    @Transactional
+    public void vincularCuidador(String phoneNumberPaciente, String codigo) {
+        Paciente paciente = userRepo.findByPhoneNumber(phoneNumberPaciente)
+                .map(User::getPaciente)
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
 
         Cuidador cuidador = cuidadorRepository.findByCodigoVinculacion(codigo)
-                .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Código de cuidador no válido"));
+
+        if (paciente.getCuidador() != null && paciente.getCuidador().equals(cuidador)) {
+            throw new RuntimeException("El paciente ya está vinculado a este cuidador");
+        }
 
         paciente.setCuidador(cuidador);
-
         cuidador.getPacientes().add(paciente);
 
-        pacienteRepository.save(paciente);
         cuidadorRepository.save(cuidador);
     }
 
 
 
-    public ResponsePacienteDto obtenerMisDatos(String emailUsuarioActual) {
-        User user = userRepo.findByEmail(emailUsuarioActual)
+    public ResponsePacienteDto obtenerMisDatos(String phoneNumberUsuarioActual) {
+        User user = userRepo.findByPhoneNumber(phoneNumberUsuarioActual)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        Paciente paciente = pacienteRepository.findByUser(user)
+        Paciente paciente = pacienteRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado para este usuario"));
 
-        ResponsePacienteDto dto = PacienteMapper.toResponse(paciente);
-
-        if (paciente.getCuidador() != null) {
-            dto.setCuidados(
-                    paciente.getCuidador().getPacientes().stream()
-                            .map(p -> p.getUser().getName())
-                            .toList()
-            );
-        }
-
-        return dto;
+        return PacienteMapper.toResponse(paciente);
     }
+
+
 
 }

@@ -18,7 +18,7 @@ public class PacienteMapper {
 
         User user = new User();
         user.setName(dto.getNombre());
-        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhoneNumber());
         user.setPassword(encoder.encode(dto.getPassword()));
         user.setRol(Rol.PACIENTE);
 
@@ -44,9 +44,12 @@ public class PacienteMapper {
         ResponsePacienteDto dto = new ResponsePacienteDto();
         dto.setId(paciente.getId());
         dto.setName(paciente.getUser().getName());
-        dto.setEmail(paciente.getUser().getEmail());
-        if (paciente.getCuidador() != null) {
+        dto.setPhoneNumber(paciente.getUser().getPhoneNumber());
+
+        if (paciente.getCuidador() != null && paciente.getCuidador().getUser() != null) {
             dto.setCuidadorName(paciente.getCuidador().getUser().getName());
+        } else {
+            dto.setCuidadorName(null);
         }
 
         return dto;

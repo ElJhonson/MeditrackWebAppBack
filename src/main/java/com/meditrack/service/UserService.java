@@ -35,13 +35,13 @@ public class UserService {
     public Map<String, String> acceder(User user) {
         Authentication authentication =
                 authManager.authenticate(new UsernamePasswordAuthenticationToken
-                        (user.getEmail(), user.getPassword()));
+                        (user.getPhoneNumber(), user.getPassword()));
 
         if(authentication.isAuthenticated()){
-            User userBD = userRepository.findByEmail(user.getEmail())
+            User userBD = userRepository.findByPhoneNumber(user.getPhoneNumber())
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
             String accessToken = jwtService.generateToken(userBD);
-            String refreshToken = jwtService.generateRefreshToken(userBD.getEmail());
+            String refreshToken = jwtService.generateRefreshToken(userBD.getPhoneNumber());
             return Map.of("accessToken", accessToken,
                     "refreshToken", refreshToken);
         }
@@ -50,8 +50,8 @@ public class UserService {
 
 
     public String refreshAccessToken(String refreshToken) {
-        String correo = jwtService.extractCorreo(refreshToken);
-        User user = userRepository.findByEmail(correo).orElseThrow();
+        String correo = jwtService.extractPhoneNumber(refreshToken);
+        User user = userRepository.findByPhoneNumber(correo).orElseThrow();
         UserDetails userDetails = userDetailsService.loadUserByUsername(correo);
 
         if (!jwtService.validateToken(refreshToken)) {

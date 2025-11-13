@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private long id;
         private String name;
-        private String email;
+        private String phoneNumber;
         private String password;
         @Enumerated(EnumType.STRING)
         private Rol rol;
@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
         @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
         private Paciente paciente;
 
-        @OneToOne(mappedBy = "user")
+        @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
         private Cuidador cuidador;
 
     }

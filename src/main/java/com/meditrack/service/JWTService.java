@@ -26,7 +26,7 @@ public class JWTService {
         claims.put("name", user.getName());
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(user.getEmail())
+                .setSubject(user.getPhoneNumber())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .signWith(getKey())
@@ -34,9 +34,9 @@ public class JWTService {
     }
 
 
-    public String generateRefreshToken(String correo) {
+    public String generateRefreshToken(String phoneNumber) {
         return Jwts.builder()
-                .setSubject(correo)
+                .setSubject(phoneNumber)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 15))
                 .signWith(getKey())
@@ -54,7 +54,7 @@ public class JWTService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String extractCorreo(String token) {
+    public String extractPhoneNumber(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 

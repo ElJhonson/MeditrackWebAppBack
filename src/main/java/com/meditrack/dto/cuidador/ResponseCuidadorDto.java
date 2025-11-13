@@ -12,7 +12,8 @@ import java.util.List;
 public class ResponseCuidadorDto {
     private Long id;
     private String name;
-    private String email;
+    private String phoneNumber;
     private String relacionConPaciente;
+    private String codigoVinculacion;
     private List<String> pacientes;
 }
