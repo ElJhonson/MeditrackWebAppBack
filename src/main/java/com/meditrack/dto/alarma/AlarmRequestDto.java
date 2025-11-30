@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AlarmRequestDto {
     private Long pacienteId;
-    private String medicina;
+    private Long medicinaId;
     private String hora;
-    private Boolean activa;
 }

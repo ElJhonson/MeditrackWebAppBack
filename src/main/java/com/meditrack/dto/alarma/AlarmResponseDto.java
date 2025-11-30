@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 public class AlarmResponseDto {
     private Long id;
     private Long pacienteId;
-    private String medicina;
+    private Long medicinaId;
+    private String medicinaNombre;
     private String hora;
-    private Boolean activa;
-    private String fechaCreacion;
+
 }
