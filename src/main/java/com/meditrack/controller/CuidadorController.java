@@ -5,9 +5,13 @@ import com.meditrack.dto.cuidador.RequestPacienteByCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
+import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
+import com.meditrack.dto.paciente.UpdatePacientePerfilDto;
+import com.meditrack.model.Paciente;
 import com.meditrack.model.User;
 import com.meditrack.service.CuidadorService;
 import com.meditrack.service.JWTService;
+import com.meditrack.service.PacienteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +25,12 @@ public class CuidadorController {
 
     private final CuidadorService cuidadorSrv;
     private final JWTService jwtService;
+    private final PacienteService pacienteService;
 
-    public CuidadorController(CuidadorService cuidadorSrv, JWTService jwtService) {
+    public CuidadorController(CuidadorService cuidadorSrv, JWTService jwtService, PacienteService pacienteService) {
         this.cuidadorSrv = cuidadorSrv;
         this.jwtService = jwtService;
+        this.pacienteService = pacienteService;
     }
 
     @PostMapping("/registro")
@@ -68,6 +74,25 @@ public class CuidadorController {
         return ResponseEntity.status(HttpStatus.CREATED).body(paciente);
     }
 
+    @GetMapping("/pacientes/{id}")
+    public ResponseEntity<ResponsePacientePerfilDto> obtenerPacientePorId(@PathVariable Long id) {
+        return ResponseEntity.ok(pacienteService.obtenerPerfilPorId(id));
+    }
+
+    @PutMapping("/pacientes/{id}/perfil")
+    public ResponseEntity<ResponsePacientePerfilDto> actualizarPerfilPaciente(
+            @PathVariable Long id,
+            @RequestBody UpdatePacientePerfilDto dto) {
+
+        ResponsePacientePerfilDto actualizado = pacienteService.actualizarPerfil(id, dto);
+        return ResponseEntity.ok(actualizado);
+    }
+
+    @DeleteMapping("/{id}/desvincular")
+    public ResponseEntity<Void> desvincularPaciente(@PathVariable Long id) {
+        cuidadorSrv.desvincularPaciente(id);
+        return ResponseEntity.noContent().build();
+    }
 
 
 }

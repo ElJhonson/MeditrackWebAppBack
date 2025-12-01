@@ -17,12 +17,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+
 @Service
 public class PacienteService {
 
     private final PacienteRepository pacienteRepository;
     private final UserRepository userRepo;
     private final CuidadorRepository cuidadorRepository;
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     public PacienteService(PacienteRepository pacienteRepository,
                            UserRepository userRepo,
@@ -112,6 +114,39 @@ public class PacienteService {
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado para este usuario"));
 
         return PacienteMapper.toPerfilResponse(paciente);
+    }
+
+    public ResponsePacientePerfilDto obtenerPerfilPorId(Long id) {
+        Paciente paciente = pacienteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+
+        return PacienteMapper.toPerfilResponse(paciente);
+    }
+
+
+    @Transactional
+    public ResponsePacientePerfilDto actualizarPerfil(Long id, UpdatePacientePerfilDto dto) {
+        Paciente paciente = pacienteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+
+        if (dto.getNombre() != null)
+            paciente.getUser().setName(dto.getNombre());
+
+        if (dto.getPassword() != null && !dto.getPassword().isBlank())
+            paciente.getUser().setPassword(encoder.encode(dto.getPassword()));
+
+        if (dto.getEdad() != null)
+            paciente.setEdad(dto.getEdad());
+
+        if (dto.getCurp() != null)
+            paciente.setCurp(dto.getCurp());
+
+        if (dto.getEnfermedadesCronicas() != null)
+            paciente.setEnfermedadesCronicas(dto.getEnfermedadesCronicas());
+
+        Paciente guardado = pacienteRepository.save(paciente);
+
+        return PacienteMapper.toPerfilResponse(guardado);
     }
 
 

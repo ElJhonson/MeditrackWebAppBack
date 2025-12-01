@@ -13,6 +13,7 @@ import com.meditrack.model.User;
 import com.meditrack.repository.CuidadorRepository;
 import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -107,7 +108,16 @@ public class CuidadorService {
         );
     }
 
+    @Transactional
+    public void desvincularPaciente(Long pacienteId) {
+        Paciente paciente = pacienteRepository.findById(pacienteId)
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
 
+        // Remueve la relación con el cuidador
+        paciente.setCuidador(null);
+
+        pacienteRepository.save(paciente);
+    }
 
 }
 
