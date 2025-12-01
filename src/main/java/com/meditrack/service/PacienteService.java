@@ -2,6 +2,8 @@ package com.meditrack.service;
 
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
+import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
+import com.meditrack.dto.paciente.UpdatePacientePerfilDto;
 import com.meditrack.mapper.PacienteMapper;
 import com.meditrack.model.Cuidador;
 import com.meditrack.model.Paciente;
@@ -10,6 +12,7 @@ import com.meditrack.repository.CuidadorRepository;
 import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -79,6 +82,37 @@ public class PacienteService {
         return PacienteMapper.toResponse(paciente);
     }
 
+    @Transactional
+    public ResponsePacienteDto actualizarPerfil(Long id, UpdatePacientePerfilDto dto, String phoneNumberActual) {
+
+        // Opcional: evitar que un paciente modifique a otro
+        User user = userRepo.findByPhoneNumber(phoneNumberActual)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Paciente paciente = pacienteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+
+        if (paciente.getUser() == null || paciente.getUser().getId() != user.getId()) {
+            throw new RuntimeException("No tienes permiso para modificar este perfil");
+        }
+
+        // Aplicar cambios
+        PacienteMapper.updatePerfil(paciente, dto);
+
+        Paciente actualizado = pacienteRepository.save(paciente);
+
+        return PacienteMapper.toResponse(actualizado);
+    }
+
+    public ResponsePacientePerfilDto obtenerPerfil(String phoneNumberUsuarioActual) {
+        User user = userRepo.findByPhoneNumber(phoneNumberUsuarioActual)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Paciente paciente = pacienteRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado para este usuario"));
+
+        return PacienteMapper.toPerfilResponse(paciente);
+    }
 
 
 }

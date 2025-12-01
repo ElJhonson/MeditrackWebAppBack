@@ -31,5 +31,14 @@ public class Paciente {
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Medicina> medicinas = new ArrayList<>();
 
+    private Integer edad;
+
+    private String curp;
+
+    @ElementCollection
+    @CollectionTable(name = "paciente_enfermedades", joinColumns = @JoinColumn(name = "paciente_id"))
+    @Column(name = "enfermedad")
+    private List<String> enfermedadesCronicas = new ArrayList<>();
+
 
 }

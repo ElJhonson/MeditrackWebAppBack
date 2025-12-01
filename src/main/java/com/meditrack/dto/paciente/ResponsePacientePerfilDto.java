@@ -9,20 +9,11 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponsePacienteDto {
+public class ResponsePacientePerfilDto {
     private Long id;
     private String name;
     private String phoneNumber;
-    private String cuidadorName;
-    private List<String> cuidados;
     private Integer edad;
     private String curp;
     private List<String> enfermedadesCronicas;
-
-    public ResponsePacienteDto(Long id, String name, String phoneNumber) {
-        this.id = id;
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-    }
-
 }
