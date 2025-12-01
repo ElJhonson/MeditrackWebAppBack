@@ -1,7 +1,9 @@
 package com.meditrack.controller;
 
 import com.meditrack.dto.cuidador.RequestCuidadorDto;
+import com.meditrack.dto.cuidador.RequestPacienteByCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
+import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
 import com.meditrack.model.User;
 import com.meditrack.service.CuidadorService;
@@ -52,5 +54,20 @@ public class CuidadorController {
         ResponseCuidadorDto dto = cuidadorSrv.obtenerMisDatos(phoneNumber);
         return ResponseEntity.ok(dto);
     }
+
+    @PostMapping("/registrar-paciente")
+    public ResponseEntity<ResponsePacienteDto> registrarPacienteDesdeCuidador(
+            @RequestHeader("Authorization") String token,
+            @RequestBody RequestPacienteDto dto
+    ) {
+        String jwt = token.replace("Bearer ", "");
+        String phoneNumber = jwtService.extractPhoneNumber(jwt);
+
+        ResponsePacienteDto paciente = cuidadorSrv.registrarPacienteDesdeCuidador(phoneNumber, dto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(paciente);
+    }
+
+
 
 }

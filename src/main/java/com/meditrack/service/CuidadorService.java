@@ -1,12 +1,17 @@
 package com.meditrack.service;
 
 import com.meditrack.dto.cuidador.RequestCuidadorDto;
+import com.meditrack.dto.cuidador.RequestPacienteByCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
+import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
 import com.meditrack.mapper.CuidadorMapper;
 import com.meditrack.model.Cuidador;
+import com.meditrack.model.Paciente;
+import com.meditrack.model.Rol;
 import com.meditrack.model.User;
 import com.meditrack.repository.CuidadorRepository;
+import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,11 +25,13 @@ public class CuidadorService {
     private final CuidadorRepository cuidadorRepository;
     private final UserRepository userRepo;
     private final BCryptPasswordEncoder encoder;
+    private final PacienteRepository pacienteRepository;
 
 
-    public CuidadorService(CuidadorRepository cuidadorRepository, UserRepository userRepo) {
+    public CuidadorService(CuidadorRepository cuidadorRepository, UserRepository userRepo, PacienteRepository pacienteRepository) {
         this.cuidadorRepository = cuidadorRepository;
         this.userRepo = userRepo;
+        this.pacienteRepository = pacienteRepository;
         this.encoder = new BCryptPasswordEncoder(12);
     }
 
@@ -63,6 +70,43 @@ public class CuidadorService {
 
         return CuidadorMapper.toResponse(cuidador);
     }
+
+    public ResponsePacienteDto registrarPacienteDesdeCuidador(
+            String phoneNumberCuidador,
+            RequestPacienteDto dto) {
+
+        // 1. Obtener cuidador que está logueado
+        Cuidador cuidador = cuidadorRepository.findByUserPhoneNumber(phoneNumberCuidador)
+                .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
+
+        // 2. Validar que el número no exista
+        if (userRepo.findByPhoneNumber(dto.getPhoneNumber()).isPresent()) {
+            throw new IllegalStateException("El número ya está registrado");
+        }
+
+        // 3. Crear usuario (paciente)
+        User user = new User();
+        user.setName(dto.getNombre());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setPassword(encoder.encode(dto.getPassword()));
+        user.setRol(Rol.PACIENTE);
+
+        // 4. Crear paciente y VINCULAR AUTOMÁTICAMENTE
+        Paciente paciente = new Paciente();
+        paciente.setUser(user);
+        paciente.setCuidador(cuidador);
+
+        // 5. Guardar
+        userRepo.save(user);
+        Paciente pacienteGuardado = pacienteRepository.save(paciente);
+
+        return new ResponsePacienteDto(
+                pacienteGuardado.getId(),
+                user.getName(),
+                user.getPhoneNumber()
+        );
+    }
+
 
 
 }

@@ -41,6 +41,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cuidadores/registro").permitAll()
                         .requestMatchers(HttpMethod.POST, "/pacientes/registro").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/cuidador/registrar-paciente").hasAuthority("CUIDADOR")
+
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
