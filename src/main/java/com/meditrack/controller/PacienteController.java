@@ -73,5 +73,24 @@ public class PacienteController {
         return ResponseEntity.ok(dto);
     }
 
+    @DeleteMapping("/desvincular-cuidador")
+    public ResponseEntity<Map<String, String>> desvincularCuidador(Authentication authentication) {
+        String phoneNumber = authentication.getName();
+        pacienteSrv.desvincularCuidador(phoneNumber);
+
+        return ResponseEntity.ok(Map.of("mensaje", "Cuidador desvinculado correctamente"));
+    }
+
+    @PutMapping("/cambiar-cuidador")
+    public ResponseEntity<Map<String, String>> cambiarCuidador(
+            @RequestParam String nuevoCodigo,
+            Authentication authentication) {
+
+        String phoneNumber = authentication.getName();
+        pacienteSrv.cambiarCuidador(phoneNumber, nuevoCodigo);
+
+        return ResponseEntity.ok(Map.of("mensaje", "Cuidador actualizado correctamente"));
+    }
+
 
 }

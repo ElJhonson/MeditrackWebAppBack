@@ -149,5 +149,47 @@ public class PacienteService {
         return PacienteMapper.toPerfilResponse(guardado);
     }
 
+    public void desvincularCuidador(String phoneNumber) {
+
+        // 1. Buscar usuario por su teléfono (del token)
+        User user = userRepo.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // 2. Obtener el paciente desde el User
+        Paciente paciente = user.getPaciente();
+        if (paciente == null)
+            throw new RuntimeException("El usuario no es un paciente");
+
+        // 3. Quitar cuidador
+        paciente.setCuidador(null);
+
+        // 4. Guardar paciente
+        pacienteRepository.save(paciente);
+    }
+
+
+    public void cambiarCuidador(String phoneNumber, String codigoCuidador) {
+
+        // 1. Usuario dueño del token
+        User user = userRepo.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // 2. Paciente del usuario
+        Paciente paciente = user.getPaciente();
+        if (paciente == null)
+            throw new RuntimeException("El usuario no es un paciente");
+
+        // 3. Buscar nuevo cuidador por código
+        Cuidador cuidador = cuidadorRepository.findByCodigoVinculacion(codigoCuidador)
+                .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
+
+        // 4. Asignar nuevo cuidador
+        paciente.setCuidador(cuidador);
+
+        // 5. Guardar
+        pacienteRepository.save(paciente);
+    }
+
+
 
 }
