@@ -47,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/medicinas/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/medicinas/**").authenticated()
                         .requestMatchers("/pacientes/**").authenticated()
+                        .requestMatchers("/alarmas/**").authenticated()
+
 
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session

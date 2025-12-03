@@ -73,5 +73,31 @@ public class AlarmaService {
         return verAlarmasDePaciente(pacienteId);
     }
 
+    public AlarmResponseDto editarAlarma(Long id, AlarmRequestDto dto) {
+        Alarma alarma = alarmaRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Alarma no encontrada"));
+
+        alarma.setHora(dto.getHora());
+        alarmaRepo.save(alarma);
+
+        return new AlarmResponseDto(
+                alarma.getId(),
+                alarma.getPaciente().getId(),
+                alarma.getMedicina().getId(),
+                alarma.getMedicina().getName(),
+                alarma.getHora()
+        );
+    }
+
+
+    public void eliminarAlarma(Long id) {
+        if (!alarmaRepo.existsById(id)) {
+            throw new RuntimeException("Alarma no encontrada");
+        }
+        alarmaRepo.deleteById(id);
+    }
+
+
+
 
 }

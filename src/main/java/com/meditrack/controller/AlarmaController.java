@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/alarmas")
@@ -33,5 +34,20 @@ public class AlarmaController {
         return ResponseEntity.ok(alarmaService.verMisAlarmas(auth));
     }
 
+    @PutMapping("/{id}/editar")
+    public ResponseEntity<AlarmResponseDto> editarHora(
+            @PathVariable Long id,
+            @RequestBody AlarmRequestDto dto,
+            Authentication auth
+    ) {
+        AlarmResponseDto updated = alarmaService.editarAlarma(id, dto);
+        return ResponseEntity.ok(updated);
+    }
 
+    // Eliminar alarma
+    @DeleteMapping("/{id}/eliminar")
+    public ResponseEntity<Map<String, String>> eliminar(@PathVariable Long id, Authentication auth) {
+        alarmaService.eliminarAlarma(id);
+        return ResponseEntity.ok(Map.of("mensaje", "Alarma eliminada correctamente"));
+    }
 }
