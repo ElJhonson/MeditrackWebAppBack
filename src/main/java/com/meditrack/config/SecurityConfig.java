@@ -41,7 +41,11 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cuidadores/registro").permitAll()
                         .requestMatchers(HttpMethod.POST, "/pacientes/registro").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/cuidador/registrar-paciente").hasAuthority("CUIDADOR")
+                        .requestMatchers(HttpMethod.POST, "/cuidador/registrar-paciente").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/medicinas/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/medicinas/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/medicinas/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/medicinas/**").authenticated()
 
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session

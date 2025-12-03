@@ -44,5 +44,31 @@ public class MedicinaController {
         return ResponseEntity.ok(medicinaService.obtenerMedicinasDePaciente(id, principal.getName()));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseMedicinaDto> obtenerPorId(
+            @PathVariable Long id,
+            Principal principal) {
 
+        return ResponseEntity.ok(medicinaService.obtenerPorId(id, principal.getName()));
+    }
+
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseMedicinaDto> actualizar(
+            @PathVariable Long id,
+            @RequestBody RequestMedicinaDto dto,
+            Principal principal) {
+
+        return ResponseEntity.ok(medicinaService.actualizarMedicina(id, dto, principal.getName()));
+    }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(
+            @PathVariable Long id,
+            Principal principal) {
+
+        medicinaService.eliminarMedicina(id, principal.getName());
+        return ResponseEntity.noContent().build();
+    }
 }

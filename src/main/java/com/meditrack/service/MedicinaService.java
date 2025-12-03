@@ -100,5 +100,59 @@ public class MedicinaService {
                 .toList();
     }
 
+    public ResponseMedicinaDto obtenerPorId(Long id, String phoneNumber) {
+        Medicina medicina = medicinaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Medicina no encontrada"));
+
+        validarAcceso(medicina.getPaciente(), phoneNumber);
+
+        return MedicinaMapper.toResponse(medicina);
+    }
+
+    public ResponseMedicinaDto actualizarMedicina(Long id, RequestMedicinaDto dto, String phoneNumber) {
+        Medicina medicina = medicinaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Medicina no encontrada"));
+
+        validarAcceso(medicina.getPaciente(), phoneNumber);
+
+        medicina.setName(dto.getNombre());
+        medicina.setDosageForm(dto.getDosageForm());
+        medicina.setExpirationDate(dto.getExpirationDate());
+
+        Medicina guardada = medicinaRepository.save(medicina);
+        return MedicinaMapper.toResponse(guardada);
+    }
+
+    public void eliminarMedicina(Long id, String phoneNumber) {
+        Medicina medicina = medicinaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Medicina no encontrada"));
+
+        validarAcceso(medicina.getPaciente(), phoneNumber);
+
+        medicinaRepository.delete(medicina);
+    }
+
+    private void validarAcceso(Paciente paciente, User user) {
+        if (user.getRol() == Rol.PACIENTE) {
+            if (paciente.getUser().getId()!=(user.getId()))
+                throw new RuntimeException("No puedes gestionar medicinas de otro paciente");
+        }
+
+        if (user.getRol() == Rol.CUIDADOR) {
+            Cuidador cuidador = user.getCuidador();
+            boolean vinculado = cuidador.getPacientes().stream()
+                    .anyMatch(p -> p.getId().equals(paciente.getId()));
+
+            if (!vinculado)
+                throw new RuntimeException("Paciente no vinculado al cuidador");
+        }
+    }
+
+    private void validarAcceso(Paciente paciente, String phoneNumber) {
+        User user = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        validarAcceso(paciente, user);
+    }
 
 }
