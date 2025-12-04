@@ -45,7 +45,8 @@ public class CuidadorController {
 
         String jwt = token.replace("Bearer ", "");
         String phoneNumber = jwtService.extractPhoneNumber(jwt);
-        List<ResponsePacienteDto> pacientes = cuidadorSrv.obtenerPacientesDeCuidador(phoneNumber);
+        List<ResponsePacienteDto> pacientes =
+                cuidadorSrv.obtenerPacientesDeCuidador(phoneNumber);
 
         return ResponseEntity.ok(pacientes);
     }
@@ -69,7 +70,8 @@ public class CuidadorController {
         String jwt = token.replace("Bearer ", "");
         String phoneNumber = jwtService.extractPhoneNumber(jwt);
 
-        ResponsePacienteDto paciente = cuidadorSrv.registrarPacienteDesdeCuidador(phoneNumber, dto);
+        ResponsePacienteDto paciente =
+                cuidadorSrv.registrarPacienteDesdeCuidador(phoneNumber, dto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(paciente);
     }

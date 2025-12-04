@@ -25,15 +25,19 @@ public class MedicinaController {
             @RequestBody RequestMedicinaDto dto,
             Principal principal) {
 
-        ResponseMedicinaDto response = medicinaService.registrarMedicina(dto, principal.getName());
+        ResponseMedicinaDto response =
+                medicinaService.registrarMedicina(dto, principal.getName());
         return ResponseEntity.ok(response);
     }
 
 
     //Paciente ve sus medicinas
     @GetMapping("/mias")
-    public ResponseEntity<List<ResponseMedicinaDto>> obtenerMisMedicinas(Principal principal) {
-        return ResponseEntity.ok(medicinaService.obtenerMedicinasDelPaciente(principal.getName()));
+    public ResponseEntity<List<ResponseMedicinaDto>> obtenerMisMedicinas
+        (Principal principal) {
+            return ResponseEntity.ok
+                (medicinaService.
+                        obtenerMedicinasDelPaciente(principal.getName()));
     }
 
     //Cuidador ve las de un paciente vinculado
@@ -59,7 +63,9 @@ public class MedicinaController {
             @RequestBody RequestMedicinaDto dto,
             Principal principal) {
 
-        return ResponseEntity.ok(medicinaService.actualizarMedicina(id, dto, principal.getName()));
+        return ResponseEntity.ok
+                (medicinaService.actualizarMedicina
+                        (id, dto, principal.getName()));
     }
 
 

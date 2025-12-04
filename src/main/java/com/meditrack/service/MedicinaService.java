@@ -27,8 +27,6 @@ public class MedicinaService {
     }
 
     public ResponseMedicinaDto registrarMedicina(RequestMedicinaDto dto, String phoneNumber) {
-
-
         User registradoPor = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 

@@ -85,7 +85,8 @@ public class PacienteService {
     }
 
     @Transactional
-    public ResponsePacienteDto actualizarPerfil(Long id, UpdatePacientePerfilDto dto, String phoneNumberActual) {
+    public ResponsePacienteDto actualizarPerfil
+            (Long id, UpdatePacientePerfilDto dto, String phoneNumberActual) {
 
         // Opcional: evitar que un paciente modifique a otro
         User user = userRepo.findByPhoneNumber(phoneNumberActual)
@@ -150,20 +151,12 @@ public class PacienteService {
     }
 
     public void desvincularCuidador(String phoneNumber) {
-
-        // 1. Buscar usuario por su teléfono (del token)
         User user = userRepo.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        // 2. Obtener el paciente desde el User
         Paciente paciente = user.getPaciente();
         if (paciente == null)
             throw new RuntimeException("El usuario no es un paciente");
-
-        // 3. Quitar cuidador
         paciente.setCuidador(null);
-
-        // 4. Guardar paciente
         pacienteRepository.save(paciente);
     }
 

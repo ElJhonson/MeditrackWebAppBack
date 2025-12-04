@@ -39,11 +39,11 @@ public class PacienteController {
     public ResponseEntity<Map<String, String>> vincularCuidador(
             @RequestParam String codigo,
             @RequestHeader("Authorization") String token) {
-
-        String phoneNumber = jwtService.extractPhoneNumber(token.replace("Bearer ", ""));
+        String phoneNumber = jwtService.extractPhoneNumber
+                (token.replace("Bearer ", ""));
         pacienteSrv.vincularCuidador(phoneNumber, codigo);
-
-        return ResponseEntity.ok(Map.of("mensaje", "Paciente vinculado correctamente al cuidador"));
+        return ResponseEntity.ok
+                (Map.of("mensaje", "Paciente vinculado correctamente al cuidador"));
     }
 
 

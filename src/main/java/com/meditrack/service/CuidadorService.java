@@ -75,29 +75,20 @@ public class CuidadorService {
     public ResponsePacienteDto registrarPacienteDesdeCuidador(
             String phoneNumberCuidador,
             RequestPacienteDto dto) {
-
-        // 1. Obtener cuidador que está logueado
         Cuidador cuidador = cuidadorRepository.findByUserPhoneNumber(phoneNumberCuidador)
                 .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
-
-        // 2. Validar que el número no exista
         if (userRepo.findByPhoneNumber(dto.getPhoneNumber()).isPresent()) {
             throw new IllegalStateException("El número ya está registrado");
         }
-
-        // 3. Crear usuario (paciente)
         User user = new User();
         user.setName(dto.getNombre());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setPassword(encoder.encode(dto.getPassword()));
         user.setRol(Rol.PACIENTE);
 
-        // 4. Crear paciente y VINCULAR AUTOMÁTICAMENTE
         Paciente paciente = new Paciente();
         paciente.setUser(user);
         paciente.setCuidador(cuidador);
-
-        // 5. Guardar
         userRepo.save(user);
         Paciente pacienteGuardado = pacienteRepository.save(paciente);
 

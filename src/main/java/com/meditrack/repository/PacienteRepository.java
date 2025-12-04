@@ -13,7 +13,10 @@ import java.util.Optional;
 public interface PacienteRepository extends JpaRepository<Paciente, Long> {
     Optional<Paciente> findByUser(User user);
     @Query("""
-    SELECT p FROM Paciente p JOIN FETCH p.user LEFT JOIN FETCH p.cuidador c  LEFT JOIN FETCH c.user WHERE p.user.id = :userId""")
+    SELECT p FROM Paciente p JOIN FETCH p.user 
+        LEFT JOIN FETCH p.cuidador c  
+            LEFT JOIN FETCH c.user WHERE p.user.id = :userId""")
     Optional<Paciente> findByUserId(@Param("userId") Long userId);
 
 }
+
