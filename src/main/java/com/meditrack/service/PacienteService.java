@@ -1,5 +1,6 @@
 package com.meditrack.service;
 
+import com.meditrack.dto.AuthResponseDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
 import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
@@ -23,21 +24,24 @@ public class PacienteService {
 
     private final PacienteRepository pacienteRepository;
     private final UserRepository userRepo;
+    private final JWTService jwtService;
     private final CuidadorRepository cuidadorRepository;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     public PacienteService(PacienteRepository pacienteRepository,
-                           UserRepository userRepo,
+                           UserRepository userRepo, JWTService jwtService,
                            CuidadorRepository cuidadorRepository) {
         this.pacienteRepository = pacienteRepository;
         this.userRepo = userRepo;
+        this.jwtService = jwtService;
         this.cuidadorRepository = cuidadorRepository;
     }
 
-    public ResponsePacienteDto registrar(RequestPacienteDto dto) {
+    @Transactional
+    public AuthResponseDto registrar(RequestPacienteDto dto) {
         Optional<User> existente = userRepo.findByPhoneNumber(dto.getPhoneNumber());
         if (existente.isPresent()) {
-            throw new IllegalStateException("El correo ya está registrado");
+            throw new IllegalStateException("El teléfono ya está registrado");
         }
 
         Cuidador cuidador = null;
@@ -49,9 +53,15 @@ public class PacienteService {
         Paciente paciente = PacienteMapper.toEntity(dto, cuidador);
         Paciente guardado = pacienteRepository.save(paciente);
 
-        System.out.println("Nombre: " + guardado.getUser().getName());
-        return PacienteMapper.toResponse(guardado);
+        User user = guardado.getUser();
+
+        String accessToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        return new AuthResponseDto(accessToken, refreshToken);
     }
+
+
 
     @Transactional
     public void vincularCuidador(String phoneNumberPaciente, String codigo) {
@@ -152,7 +162,8 @@ public class PacienteService {
 
     public void desvincularCuidador(String phoneNumber) {
         User user = userRepo.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() ->
+                        new RuntimeException("Usuario no encontrado"));
         Paciente paciente = user.getPaciente();
         if (paciente == null)
             throw new RuntimeException("El usuario no es un paciente");
@@ -162,24 +173,16 @@ public class PacienteService {
 
 
     public void cambiarCuidador(String phoneNumber, String codigoCuidador) {
-
-        // 1. Usuario dueño del token
         User user = userRepo.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        // 2. Paciente del usuario
+                .orElseThrow(() ->
+                        new RuntimeException("Usuario no encontrado"));
         Paciente paciente = user.getPaciente();
         if (paciente == null)
             throw new RuntimeException("El usuario no es un paciente");
-
-        // 3. Buscar nuevo cuidador por código
-        Cuidador cuidador = cuidadorRepository.findByCodigoVinculacion(codigoCuidador)
+        Cuidador cuidador = cuidadorRepository
+                .findByCodigoVinculacion(codigoCuidador)
                 .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
-
-        // 4. Asignar nuevo cuidador
         paciente.setCuidador(cuidador);
-
-        // 5. Guardar
         pacienteRepository.save(paciente);
     }
 

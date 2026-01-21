@@ -1,7 +1,7 @@
 package com.meditrack.service;
 
+import com.meditrack.dto.AuthResponseDto;
 import com.meditrack.dto.cuidador.RequestCuidadorDto;
-import com.meditrack.dto.cuidador.RequestPacienteByCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
@@ -27,16 +27,20 @@ public class CuidadorService {
     private final UserRepository userRepo;
     private final BCryptPasswordEncoder encoder;
     private final PacienteRepository pacienteRepository;
+    private final JWTService jwtService;
 
 
-    public CuidadorService(CuidadorRepository cuidadorRepository, UserRepository userRepo, PacienteRepository pacienteRepository) {
+    public CuidadorService(CuidadorRepository cuidadorRepository, UserRepository userRepo, PacienteRepository pacienteRepository, JWTService jwtService) {
         this.cuidadorRepository = cuidadorRepository;
         this.userRepo = userRepo;
         this.pacienteRepository = pacienteRepository;
+        this.jwtService = jwtService;
         this.encoder = new BCryptPasswordEncoder(12);
     }
 
-    public ResponseCuidadorDto registrar(RequestCuidadorDto dto) {
+    @Transactional
+    public AuthResponseDto registrar(RequestCuidadorDto dto) {
+
         Optional<User> existente = userRepo.findByPhoneNumber(dto.getPhoneNumber());
         if (existente.isPresent()) {
             throw new IllegalStateException("El número de teléfono ya está registrado");
@@ -47,10 +51,14 @@ public class CuidadorService {
         User userGuardado = userRepo.save(cuidador.getUser());
         cuidador.setUser(userGuardado);
 
-        Cuidador guardado = cuidadorRepository.save(cuidador);
+        cuidadorRepository.save(cuidador);
 
-        return CuidadorMapper.toResponse(guardado);
+        String accessToken = jwtService.generateToken(userGuardado);
+        String refreshToken = jwtService.generateRefreshToken(userGuardado);
+
+        return new AuthResponseDto(accessToken, refreshToken);
     }
+
 
     public List<ResponsePacienteDto> obtenerPacientesDeCuidador(String phoneNumberCuidador) {
         Cuidador cuidador = cuidadorRepository.findByUserPhoneNumber(phoneNumberCuidador)
@@ -81,7 +89,7 @@ public class CuidadorService {
             throw new IllegalStateException("El número ya está registrado");
         }
         User user = new User();
-        user.setName(dto.getNombre());
+        user.setName(dto.getName());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setPassword(encoder.encode(dto.getPassword()));
         user.setRol(Rol.PACIENTE);

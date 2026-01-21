@@ -1,5 +1,6 @@
 package com.meditrack.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class Paciente {
 
     @ManyToOne
     @JoinColumn(name = "cuidador_id")
+    @JsonIgnore
     private Cuidador cuidador;
 
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)

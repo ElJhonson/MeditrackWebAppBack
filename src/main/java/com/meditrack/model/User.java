@@ -1,6 +1,7 @@
 package com.meditrack.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,9 +27,11 @@ import lombok.NoArgsConstructor;
 
 
         @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+        @JsonIgnore
         private Paciente paciente;
 
         @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+        @JsonIgnore
         private Cuidador cuidador;
 
     }

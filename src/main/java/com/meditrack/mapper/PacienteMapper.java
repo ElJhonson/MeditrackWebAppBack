@@ -19,23 +19,21 @@ public class PacienteMapper {
         if (dto == null) return null;
 
         User user = new User();
-        user.setName(dto.getNombre());
+        user.setName(dto.getName());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setPassword(encoder.encode(dto.getPassword()));
         user.setRol(Rol.PACIENTE);
 
         Paciente paciente = new Paciente();
         paciente.setUser(user);
+        paciente.setEdad(dto.getEdad()); // ✅ AQUÍ ESTABA EL ERROR
         paciente.setCuidador(cuidador);
 
         user.setPaciente(paciente);
 
         if (cuidador != null) {
-            paciente.setCuidador(cuidador);
             cuidador.getPacientes().add(paciente);
         }
-
-        user.setPaciente(paciente);
 
         return paciente;
     }
@@ -47,6 +45,7 @@ public class PacienteMapper {
         dto.setId(paciente.getId());
         dto.setName(paciente.getUser().getName());
         dto.setPhoneNumber(paciente.getUser().getPhoneNumber());
+        dto.setEdad(paciente.getEdad());
 
         if (paciente.getCuidador() != null && paciente.getCuidador().getUser() != null) {
             dto.setCuidadorName(paciente.getCuidador().getUser().getName());

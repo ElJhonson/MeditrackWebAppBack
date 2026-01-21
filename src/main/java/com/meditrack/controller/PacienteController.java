@@ -1,5 +1,6 @@
 package com.meditrack.controller;
 
+import com.meditrack.dto.AuthResponseDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
 import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
@@ -30,10 +31,13 @@ public class PacienteController {
 
 
     @PostMapping("/registro")
-    public ResponseEntity<ResponsePacienteDto> registrar(@RequestBody RequestPacienteDto dto){
-        ResponsePacienteDto response = pacienteSrv.registrar(dto);
+    public ResponseEntity<AuthResponseDto> registrar(
+            @RequestBody RequestPacienteDto dto
+    ) {
+        AuthResponseDto response = pacienteSrv.registrar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @PostMapping("/vincular-cuidador")
     public ResponseEntity<Map<String, String>> vincularCuidador(
@@ -74,11 +78,13 @@ public class PacienteController {
     }
 
     @DeleteMapping("/desvincular-cuidador")
-    public ResponseEntity<Map<String, String>> desvincularCuidador(Authentication authentication) {
+    public ResponseEntity<Map<String, String>>
+    desvincularCuidador(Authentication authentication) {
         String phoneNumber = authentication.getName();
         pacienteSrv.desvincularCuidador(phoneNumber);
 
-        return ResponseEntity.ok(Map.of("mensaje", "Cuidador desvinculado correctamente"));
+        return ResponseEntity.ok
+                (Map.of("mensaje", "Cuidador desvinculado correctamente"));
     }
 
     @PutMapping("/cambiar-cuidador")
@@ -89,7 +95,8 @@ public class PacienteController {
         String phoneNumber = authentication.getName();
         pacienteSrv.cambiarCuidador(phoneNumber, nuevoCodigo);
 
-        return ResponseEntity.ok(Map.of("mensaje", "Cuidador actualizado correctamente"));
+        return ResponseEntity.ok
+                (Map.of("mensaje", "Cuidador actualizado correctamente"));
     }
 
 

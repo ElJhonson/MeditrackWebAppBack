@@ -15,3 +15,5 @@
         Optional<Cuidador> findByUserPhoneNumber(String phoneNumber);
         Optional<Cuidador> findByUserId(Long userId);
     }
+
+

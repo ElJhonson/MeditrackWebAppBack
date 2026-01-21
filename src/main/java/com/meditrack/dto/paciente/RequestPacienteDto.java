@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
     @AllArgsConstructor
     @NoArgsConstructor
     public class RequestPacienteDto {
-        private String nombre;
+        private String name;
+        private Integer edad;
         private String phoneNumber;
         private String password;
         private Long cuidadorId;

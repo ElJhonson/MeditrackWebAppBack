@@ -1,5 +1,6 @@
 package com.meditrack.controller;
 
+import com.meditrack.dto.AuthResponseDto;
 import com.meditrack.dto.cuidador.RequestCuidadorDto;
 import com.meditrack.dto.cuidador.RequestPacienteByCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
@@ -34,10 +35,13 @@ public class CuidadorController {
     }
 
     @PostMapping("/registro")
-    public ResponseEntity<ResponseCuidadorDto> registrar(@RequestBody RequestCuidadorDto dto){
-        ResponseCuidadorDto response = cuidadorSrv.registrar(dto);
+    public ResponseEntity<AuthResponseDto> registrar(
+            @RequestBody RequestCuidadorDto dto
+    ) {
+        AuthResponseDto response = cuidadorSrv.registrar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @GetMapping("/pacientes-del-cuidador")
     public ResponseEntity<List<ResponsePacienteDto>> obtenerPacientesDelCuidador(

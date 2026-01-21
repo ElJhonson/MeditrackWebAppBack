@@ -41,7 +41,7 @@ public class UserService {
             User userBD = userRepository.findByPhoneNumber(user.getPhoneNumber())
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
             String accessToken = jwtService.generateToken(userBD);
-            String refreshToken = jwtService.generateRefreshToken(userBD.getPhoneNumber());
+            String refreshToken = jwtService.generateRefreshToken(userBD);
             return Map.of("accessToken", accessToken,
                     "refreshToken", refreshToken);
         }

@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/contactos")
 @CrossOrigin("*")
@@ -19,8 +21,33 @@ public class ContactoController {
             @PathVariable Long pacienteId,
             @RequestBody Contacto contacto
     ) {
-        Contacto nuevo = contactoService.crearContacto(pacienteId, contacto);
+        Contacto nuevo = contactoService.
+                crearContacto(pacienteId, contacto);
         return ResponseEntity.ok(nuevo);
+    }
+
+    @GetMapping("/{pacienteId}")
+    public ResponseEntity<List<Contacto>> obtenerContactos(
+            @PathVariable Long pacienteId
+    ) {
+        return ResponseEntity.ok(contactoService.
+                getContactosByPaciente(pacienteId));
+    }
+
+    @PutMapping("/actualizar/{contactoId}")
+    public ResponseEntity<Contacto> actualizarContacto(
+            @PathVariable Long contactoId,
+            @RequestBody Contacto contactoActualizado
+    ) {
+        Contacto actualizado = contactoService.
+                actualizarContacto(contactoId, contactoActualizado);
+        return ResponseEntity.ok(actualizado);
+    }
+
+    @DeleteMapping("/eliminar/{contactoId}")
+    public ResponseEntity<Void> eliminarContacto(@PathVariable Long contactoId) {
+        contactoService.eliminarContacto(contactoId);
+        return ResponseEntity.noContent().build();
     }
 
 }

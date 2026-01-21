@@ -3,12 +3,15 @@ package com.meditrack.service;
 import com.meditrack.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,19 +32,25 @@ public class JWTService {
                 .setSubject(user.getPhoneNumber())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
-                .signWith(getKey())
+                .signWith(getKey(),  SignatureAlgorithm.HS256)
                 .compact();
     }
 
 
-    public String generateRefreshToken(String phoneNumber) {
+    public String generateRefreshToken(User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "refresh");
+
         return Jwts.builder()
-                .setSubject(phoneNumber)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setClaims(claims)
+                .setSubject(user.getPhoneNumber())
+                .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 15))
                 .signWith(getKey())
                 .compact();
     }
+
+
 
 
     public String extractRol(String token) {
@@ -49,10 +58,12 @@ public class JWTService {
     }
 
 
-    private SecretKey getKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+    private Key getKey() {
+        return Keys.hmacShaKeyFor(
+                secretKey.getBytes(StandardCharsets.UTF_8)
+        );
     }
+
 
     public String extractPhoneNumber(String token) {
         return extractClaim(token, Claims::getSubject);
