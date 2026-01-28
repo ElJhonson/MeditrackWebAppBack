@@ -80,6 +80,7 @@ public class CuidadorService {
         return CuidadorMapper.toResponse(cuidador);
     }
 
+    @Transactional
     public ResponsePacienteDto registrarPacienteDesdeCuidador(
             String phoneNumberCuidador,
             RequestPacienteDto dto) {
