@@ -7,6 +7,7 @@ import com.meditrack.model.*;
 import com.meditrack.repository.MedicinaRepository;
 import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,12 +27,20 @@ public class MedicinaService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public ResponseMedicinaDto registrarMedicina(RequestMedicinaDto dto, String phoneNumber) {
         User registradoPor = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+        Paciente paciente;
+
+        if (registradoPor.getRol() == Rol.PACIENTE) {
+            paciente = registradoPor.getPaciente();
+        } else {
+            paciente = pacienteRepository.findById(dto.getPacienteId())
+                    .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+        }
+
 
         if (registradoPor.getRol() == Rol.CUIDADOR) {
             Cuidador cuidador = registradoPor.getCuidador();

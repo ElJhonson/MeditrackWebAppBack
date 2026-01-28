@@ -4,6 +4,7 @@ import com.meditrack.dto.medicina.RequestMedicinaDto;
 import com.meditrack.dto.medicina.ResponseMedicinaDto;
 import com.meditrack.model.Medicina;
 import com.meditrack.model.Paciente;
+import com.meditrack.model.Rol;
 import com.meditrack.model.User;
 
 public class MedicinaMapper {
@@ -24,18 +25,28 @@ public class MedicinaMapper {
     public static ResponseMedicinaDto toResponse(Medicina medicina) {
         if (medicina == null) return null;
 
+        String registradoPor;
+
+        if (medicina.getRegistradoPor() != null &&
+                medicina.getRegistradoPor().getRol() == Rol.CUIDADOR) {
+            registradoPor = "Cuidador";
+        } else {
+            registradoPor = "Paciente";
+        }
+
         ResponseMedicinaDto dto = new ResponseMedicinaDto();
         dto.setId(medicina.getId());
         dto.setNombre(medicina.getName());
         dto.setDosageForm(medicina.getDosageForm());
         dto.setExpirationDate(medicina.getExpirationDate());
+        dto.setRegistradoPorNombre(registradoPor);
 
-        if (medicina.getPaciente() != null && medicina.getPaciente().getUser() != null) {
-            dto.setPacienteNombre(medicina.getPaciente().getUser().getName());
-        }
 
-        if (medicina.getRegistradoPor() != null) {
-            dto.setRegistradoPorNombre(medicina.getRegistradoPor().getName());
+        if (medicina.getPaciente() != null &&
+                medicina.getPaciente().getUser() != null) {
+            dto.setPacienteNombre(
+                    medicina.getPaciente().getUser().getName()
+            );
         }
 
         return dto;
