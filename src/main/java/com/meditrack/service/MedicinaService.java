@@ -9,6 +9,7 @@ import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 
@@ -70,7 +71,7 @@ public class MedicinaService {
         }
 
         Paciente paciente = user.getPaciente();
-        List<Medicina> medicinas = medicinaRepository.findByPaciente(paciente);
+        List<Medicina> medicinas = medicinaRepository.findByPacienteAndEstado(paciente, Estado.ACTIVO);
 
         return medicinas.stream()
                 .map(MedicinaMapper::toResponse)
@@ -100,7 +101,7 @@ public class MedicinaService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
 
-        List<Medicina> medicinas = medicinaRepository.findByPaciente(paciente);
+        List<Medicina> medicinas = medicinaRepository.findByPacienteAndEstado(paciente, Estado.ACTIVO);
 
         return medicinas.stream()
                 .map(MedicinaMapper::toResponse)
@@ -130,14 +131,18 @@ public class MedicinaService {
         return MedicinaMapper.toResponse(guardada);
     }
 
-    public void eliminarMedicina(Long id, String phoneNumber) {
+    @Transactional
+    public void desactivarMedicina(Long id, String username) {
         Medicina medicina = medicinaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Medicina no encontrada"));
 
-        validarAcceso(medicina.getPaciente(), phoneNumber);
+        if (!medicina.getPaciente().getUser().getPhoneNumber().equals(username)) {
+            throw new AccessDeniedException("No autorizado");
+        }
 
-        medicinaRepository.delete(medicina);
+        medicina.setEstado(Estado.INACTIVO);
     }
+
 
     private void validarAcceso(Paciente paciente, User user) {
         if (user.getRol() == Rol.PACIENTE) {

@@ -6,6 +6,7 @@ import com.meditrack.service.MedicinaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 import java.util.List;
 
@@ -70,11 +71,12 @@ public class MedicinaController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(
+    public ResponseEntity<Void> eliminarMedicina(
             @PathVariable Long id,
             Principal principal) {
 
-        medicinaService.eliminarMedicina(id, principal.getName());
+        medicinaService.desactivarMedicina(id, principal.getName());
         return ResponseEntity.noContent().build();
     }
+
 }

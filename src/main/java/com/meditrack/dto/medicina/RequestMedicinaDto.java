@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -13,7 +13,7 @@ public class RequestMedicinaDto {
 
     private String nombre;
     private String dosageForm;
-    private Date expirationDate;
+    private LocalDate expirationDate;
     private Long pacienteId;
 
 }

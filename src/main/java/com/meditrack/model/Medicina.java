@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -22,9 +23,11 @@ public class Medicina {
 
     private String dosageForm;
 
-    @Temporal(TemporalType.DATE)
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date expirationDate;
+    @Enumerated(EnumType.STRING)
+    private Estado estado = Estado.ACTIVO;
+
+    @Column(nullable = false)
+    private LocalDate expirationDate;
 
     @ManyToOne
     @JoinColumn(name = "paciente_id")
