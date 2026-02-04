@@ -1,6 +1,6 @@
 package com.meditrack.service;
 
-import com.meditrack.dto.AuthResponseDto;
+import com.meditrack.dto.auth.AuthResponseDto;
 import com.meditrack.dto.cuidador.RequestCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;

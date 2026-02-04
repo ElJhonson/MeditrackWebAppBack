@@ -1,15 +1,12 @@
 package com.meditrack.controller;
 
-import com.meditrack.dto.AuthResponseDto;
+import com.meditrack.dto.auth.AuthResponseDto;
 import com.meditrack.dto.cuidador.RequestCuidadorDto;
-import com.meditrack.dto.cuidador.RequestPacienteByCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
 import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
 import com.meditrack.dto.paciente.UpdatePacientePerfilDto;
-import com.meditrack.model.Paciente;
-import com.meditrack.model.User;
 import com.meditrack.service.CuidadorService;
 import com.meditrack.service.JWTService;
 import com.meditrack.service.PacienteService;
