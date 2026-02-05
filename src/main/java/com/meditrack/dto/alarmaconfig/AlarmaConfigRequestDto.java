@@ -5,7 +5,6 @@ import lombok.Data;
 @Data
 public class AlarmaConfigRequestDto {
 
-    private Long pacienteId;
     private Long medicinaId;
 
     private LocalDateTime fechaInicio;
@@ -13,4 +12,5 @@ public class AlarmaConfigRequestDto {
 
     private int frecuenciaHoras;
 }
+
 

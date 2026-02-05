@@ -4,7 +4,6 @@ import com.meditrack.dto.alarmaconfig.AlarmaConfigRequestDto;
 import com.meditrack.dto.alarmaconfig.AlarmaConfigResponseDto;
 import com.meditrack.model.AlarmaConfig;
 import com.meditrack.model.Medicina;
-import com.meditrack.model.Paciente;
 
 import java.time.LocalDateTime;
 
@@ -14,11 +13,9 @@ public class AlarmaConfigMapper {
 
     public static AlarmaConfig toEntity(
             AlarmaConfigRequestDto dto,
-            Paciente paciente,
             Medicina medicina
     ) {
         AlarmaConfig config = new AlarmaConfig();
-        config.setPaciente(paciente);
         config.setMedicina(medicina);
         config.setFechaInicio(dto.getFechaInicio());
         config.setFechaFin(dto.getFechaFin());

@@ -21,14 +21,16 @@ public class AlarmaConfigController {
     }
 
     @PostMapping("/crear")
-    public ResponseEntity<AlarmaConfigResponseDto> crearConfiguracionAlarma
-            (@RequestBody AlarmaConfigRequestDto alarmaConfig){
-
-        AlarmaConfigResponseDto alarma = alarmaConfigService.crear(alarmaConfig);
+    public ResponseEntity<AlarmaConfigResponseDto> crearConfiguracionAlarma(
+            @RequestBody AlarmaConfigRequestDto alarmaConfig,
+            Principal principal
+    ) {
+        AlarmaConfigResponseDto alarma =
+                alarmaConfigService.crear(alarmaConfig, principal.getName());
 
         return ResponseEntity.ok(alarma);
-
     }
+
 
     @GetMapping("/mias")
     public ResponseEntity<List<AlarmaConfigResponseDto>> obtenerAlarmasConfig(

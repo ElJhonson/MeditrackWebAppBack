@@ -18,7 +18,6 @@ public class AlarmaConfigService {
 
     private final AlarmaConfigRepository alarmaConfigRepository;
     private final AlarmaRepository alarmaRepository;
-    private final PacienteRepository pacienteRepository;
     private final MedicinaRepository medicinaRepository;
     private final UserRepository userRepository;
 
@@ -26,12 +25,10 @@ public class AlarmaConfigService {
     public AlarmaConfigService(
             AlarmaConfigRepository alarmaConfigRepository,
             AlarmaRepository alarmaRepository,
-            PacienteRepository pacienteRepository,
             MedicinaRepository medicinaRepository, UserRepository userRepository
     ) {
         this.alarmaConfigRepository = alarmaConfigRepository;
         this.alarmaRepository = alarmaRepository;
-        this.pacienteRepository = pacienteRepository;
         this.medicinaRepository = medicinaRepository;
         this.userRepository = userRepository;
     }
@@ -41,39 +38,38 @@ public class AlarmaConfigService {
      * las alarmas correspondientes.
      */
     @Transactional
-    public AlarmaConfigResponseDto crear(AlarmaConfigRequestDto dto) {
+    public AlarmaConfigResponseDto crear(
+            AlarmaConfigRequestDto dto,
+            String phoneNumber
+    ) {
 
-        // 1️⃣ Obtener entidades base
-        Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+        User user = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (user.getRol() != Rol.PACIENTE) {
+            throw new RuntimeException("Solo pacientes pueden crear alarmas");
+        }
+
+        Paciente paciente = user.getPaciente();
 
         Medicina medicina = medicinaRepository.findById(dto.getMedicinaId())
                 .orElseThrow(() -> new RuntimeException("Medicina no encontrada"));
 
-        // 2️⃣ Validaciones básicas
-        if (dto.getFechaInicio().isAfter(dto.getFechaFin())) {
-            throw new RuntimeException("La fecha de inicio no puede ser posterior a la fecha fin");
-        }
+        AlarmaConfig config = AlarmaConfigMapper.toEntity(dto, medicina);
+        config.setPaciente(paciente);
 
-        if (dto.getFrecuenciaHoras() <= 0) {
-            throw new RuntimeException("La frecuencia debe ser mayor a 0 horas");
-        }
+        alarmaConfigRepository.save(config);
 
-        // 3️⃣ Crear y guardar configuración
-        AlarmaConfig config = AlarmaConfigMapper.toEntity(dto, paciente, medicina);
-        AlarmaConfig configGuardada = alarmaConfigRepository.save(config);
-
-        // 4️⃣ Generar alarmas
-        List<Alarma> alarmas = generarAlarmas(configGuardada);
+        List<Alarma> alarmas = generarAlarmas(config);
 
         alarmaRepository.saveAll(alarmas);
 
-        // 5️⃣ Retornar respuesta
-        return AlarmaConfigMapper.toResponseDTO(configGuardada);
+        return AlarmaConfigMapper.toResponseDTO(config);
     }
 
+
     /**
-     * Genera las alarmas en base a la configuración.
+     * Genera las alarmas con base en la configuración.
      */
     private List<Alarma> generarAlarmas(AlarmaConfig config) {
         List<Alarma> alarmas = new ArrayList<>();
