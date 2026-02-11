@@ -12,5 +12,4 @@ import lombok.NoArgsConstructor;
         private Integer edad;
         private String phoneNumber;
         private String password;
-        private Long cuidadorId;
     }

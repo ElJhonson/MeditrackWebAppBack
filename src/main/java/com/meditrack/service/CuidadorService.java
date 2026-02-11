@@ -6,16 +6,17 @@ import com.meditrack.dto.cuidador.ResponseCuidadorDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
 import com.meditrack.mapper.CuidadorMapper;
+import com.meditrack.mapper.PacienteMapper;
 import com.meditrack.model.Cuidador;
 import com.meditrack.model.Paciente;
-import com.meditrack.model.Rol;
 import com.meditrack.model.User;
 import com.meditrack.repository.CuidadorRepository;
 import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +26,6 @@ public class CuidadorService {
 
     private final CuidadorRepository cuidadorRepository;
     private final UserRepository userRepo;
-    private final BCryptPasswordEncoder encoder;
     private final PacienteRepository pacienteRepository;
     private final JWTService jwtService;
 
@@ -35,7 +35,6 @@ public class CuidadorService {
         this.userRepo = userRepo;
         this.pacienteRepository = pacienteRepository;
         this.jwtService = jwtService;
-        this.encoder = new BCryptPasswordEncoder(12);
     }
 
     @Transactional
@@ -43,7 +42,10 @@ public class CuidadorService {
 
         Optional<User> existente = userRepo.findByPhoneNumber(dto.getPhoneNumber());
         if (existente.isPresent()) {
-            throw new IllegalStateException("El número de teléfono ya está registrado");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "El número ya está registrado"
+            );
         }
 
         Cuidador cuidador = CuidadorMapper.toEntity(dto);
@@ -62,15 +64,16 @@ public class CuidadorService {
 
     public List<ResponsePacienteDto> obtenerPacientesDeCuidador(String phoneNumberCuidador) {
         Cuidador cuidador = cuidadorRepository.findByUserPhoneNumber(phoneNumberCuidador)
-                .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Cuidador no encontrado"
+        ));
+
 
         return cuidador.getPacientes().stream()
-                .map(p -> new ResponsePacienteDto(
-                        p.getId(),
-                        p.getUser().getName(),
-                        p.getUser().getPhoneNumber()
-                ))
+                .map(PacienteMapper::toResponse)
                 .toList();
+
     }
 
     public ResponseCuidadorDto obtenerMisDatos(String phoneNumberCuidador) {
@@ -84,29 +87,33 @@ public class CuidadorService {
     public ResponsePacienteDto registrarPacienteDesdeCuidador(
             String phoneNumberCuidador,
             RequestPacienteDto dto) {
-        Cuidador cuidador = cuidadorRepository.findByUserPhoneNumber(phoneNumberCuidador)
-                .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
+
+        // 1. Buscar cuidador autenticado
+        Cuidador cuidador = cuidadorRepository
+                .findByUserPhoneNumber(phoneNumberCuidador)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Cuidador no encontrado"
+                ));
+
+        // 2. Validar teléfono único
         if (userRepo.findByPhoneNumber(dto.getPhoneNumber()).isPresent()) {
-            throw new IllegalStateException("El número ya está registrado");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "El número ya está registrado"
+            );
         }
-        User user = new User();
-        user.setName(dto.getName());
-        user.setPhoneNumber(dto.getPhoneNumber());
-        user.setPassword(encoder.encode(dto.getPassword()));
-        user.setRol(Rol.PACIENTE);
 
-        Paciente paciente = new Paciente();
-        paciente.setUser(user);
-        paciente.setCuidador(cuidador);
-        userRepo.save(user);
-        Paciente pacienteGuardado = pacienteRepository.save(paciente);
+        // 3. Crear paciente (incluye User y vínculo con cuidador)
+        Paciente paciente = PacienteMapper.toEntity(dto, cuidador);
 
-        return new ResponsePacienteDto(
-                pacienteGuardado.getId(),
-                user.getName(),
-                user.getPhoneNumber()
-        );
+        // 4. Guardar (cascade guarda User automáticamente)
+        pacienteRepository.save(paciente);
+
+        // 5. Respuesta
+        return PacienteMapper.toResponse(paciente);
     }
+
 
     @Transactional
     public void desvincularPaciente(Long pacienteId) {

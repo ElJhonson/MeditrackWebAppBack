@@ -26,7 +26,7 @@ public class PacienteMapper {
 
         Paciente paciente = new Paciente();
         paciente.setUser(user);
-        paciente.setEdad(dto.getEdad()); // ✅ AQUÍ ESTABA EL ERROR
+        paciente.setEdad(dto.getEdad());
         paciente.setCuidador(cuidador);
 
         user.setPaciente(paciente);

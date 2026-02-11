@@ -45,11 +45,6 @@ public class PacienteService {
         }
 
         Cuidador cuidador = null;
-        if (dto.getCuidadorId() != null) {
-            cuidador = cuidadorRepository.findById(dto.getCuidadorId())
-                    .orElseThrow(() -> new IllegalStateException("Cuidador no encontrado"));
-        }
-
         Paciente paciente = PacienteMapper.toEntity(dto, cuidador);
         Paciente guardado = pacienteRepository.save(paciente);
 

@@ -19,10 +19,4 @@ public class ResponsePacienteDto {
     private String curp;
     private List<String> enfermedadesCronicas;
 
-    public ResponsePacienteDto(Long id, String name, String phoneNumber) {
-        this.id = id;
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-    }
-
 }
