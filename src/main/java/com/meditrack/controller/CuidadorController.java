@@ -9,7 +9,7 @@ import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
 import com.meditrack.dto.paciente.UpdatePacientePerfilDto;
 import com.meditrack.service.CuidadorService;
 import com.meditrack.service.JWTService;
-import com.meditrack.service.PacienteService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,17 +19,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/cuidadores")
 @CrossOrigin("*")
+@RequiredArgsConstructor
 public class CuidadorController {
 
     private final CuidadorService cuidadorSrv;
     private final JWTService jwtService;
-    private final PacienteService pacienteService;
-
-    public CuidadorController(CuidadorService cuidadorSrv, JWTService jwtService, PacienteService pacienteService) {
-        this.cuidadorSrv = cuidadorSrv;
-        this.jwtService = jwtService;
-        this.pacienteService = pacienteService;
-    }
 
     @PostMapping("/registro")
     public ResponseEntity<AuthResponseDto> registrar(
@@ -77,25 +71,48 @@ public class CuidadorController {
         return ResponseEntity.status(HttpStatus.CREATED).body(paciente);
     }
 
-    @GetMapping("/pacientes/{id}")
-    public ResponseEntity<ResponsePacientePerfilDto> obtenerPacientePorId(@PathVariable Long id) {
-        return ResponseEntity.ok(pacienteService.obtenerPerfilPorId(id));
-    }
-
-    @PutMapping("/pacientes/{id}/perfil")
-    public ResponseEntity<ResponsePacientePerfilDto> actualizarPerfilPaciente(
-            @PathVariable Long id,
-            @RequestBody UpdatePacientePerfilDto dto) {
-
-        ResponsePacientePerfilDto actualizado = pacienteService.actualizarPerfil(id, dto);
-        return ResponseEntity.ok(actualizado);
-    }
-
     @DeleteMapping("/{id}/desvincular")
     public ResponseEntity<Void> desvincularPaciente(@PathVariable Long id) {
         cuidadorSrv.desvincularPaciente(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/pacientes/{pacienteId}")
+    public ResponseEntity<ResponsePacientePerfilDto> actualizarPaciente(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long pacienteId,
+            @RequestBody UpdatePacientePerfilDto dto
+    ) {
+
+        String jwt = token.replace("Bearer ", "");
+        String phoneNumber = jwtService.extractPhoneNumber(jwt);
+
+        ResponsePacientePerfilDto response =
+                cuidadorSrv.actualizarPacienteDesdeCuidador(
+                        pacienteId,
+                        phoneNumber,
+                        dto
+                );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/pacientes/{pacienteId}")
+    public ResponseEntity<ResponsePacientePerfilDto> obtenerPaciente(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long pacienteId
+    ) {
+
+        String jwt = token.replace("Bearer ", "");
+        String phoneNumber = jwtService.extractPhoneNumber(jwt);
+
+        ResponsePacientePerfilDto response =
+                cuidadorSrv.obtenerPacienteDesdeCuidador(
+                        pacienteId,
+                        phoneNumber
+                );
+
+        return ResponseEntity.ok(response);
+    }
 
 }

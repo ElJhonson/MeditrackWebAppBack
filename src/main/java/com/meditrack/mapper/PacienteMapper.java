@@ -56,37 +56,37 @@ public class PacienteMapper {
         return dto;
     }
 
-    public static void updatePerfil(Paciente paciente, UpdatePacientePerfilDto dto) {
+    public static void updatePacienteFromDto(UpdatePacientePerfilDto dto, Paciente paciente) {
+        if (dto == null || paciente == null) return;
 
-        if (dto.getNombre() != null)
+        if (dto.getNombre() != null) {
             paciente.getUser().setName(dto.getNombre());
-
-        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-            paciente.getUser().setPassword(encoder.encode(dto.getPassword()));
         }
 
-        if (dto.getEdad() != null)
+        if (dto.getEdad() != null) {
             paciente.setEdad(dto.getEdad());
+        }
 
-        if (dto.getCurp() != null)
+        if (dto.getCurp() != null) {
             paciente.setCurp(dto.getCurp());
+        }
 
-        if (dto.getEnfermedadesCronicas() != null)
+        if (dto.getEnfermedadesCronicas() != null) {
             paciente.setEnfermedadesCronicas(dto.getEnfermedadesCronicas());
+        }
     }
 
-    public static ResponsePacientePerfilDto toPerfilResponse(Paciente paciente) {
+    public static ResponsePacientePerfilDto toResponsePerfil(Paciente paciente) {
         if (paciente == null) return null;
 
         ResponsePacientePerfilDto dto = new ResponsePacientePerfilDto();
         dto.setId(paciente.getId());
-        if (paciente.getUser() != null) {
-            dto.setName(paciente.getUser().getName());
-            dto.setPhoneNumber(paciente.getUser().getPhoneNumber());
-        }
+        dto.setName(paciente.getUser().getName());
+        dto.setPhoneNumber(paciente.getUser().getPhoneNumber());
         dto.setEdad(paciente.getEdad());
         dto.setCurp(paciente.getCurp());
         dto.setEnfermedadesCronicas(paciente.getEnfermedadesCronicas());
+
         return dto;
     }
 

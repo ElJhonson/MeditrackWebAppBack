@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-
 @Service
 public class PacienteService {
 
@@ -26,7 +25,6 @@ public class PacienteService {
     private final UserRepository userRepo;
     private final JWTService jwtService;
     private final CuidadorRepository cuidadorRepository;
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     public PacienteService(PacienteRepository pacienteRepository,
                            UserRepository userRepo, JWTService jwtService,
@@ -70,14 +68,11 @@ public class PacienteService {
         if (paciente.getCuidador() != null && paciente.getCuidador().equals(cuidador)) {
             throw new RuntimeException("El paciente ya está vinculado a este cuidador");
         }
-
         paciente.setCuidador(cuidador);
         cuidador.getPacientes().add(paciente);
 
         cuidadorRepository.save(cuidador);
     }
-
-
 
     public ResponsePacienteDto obtenerMisDatos(String phoneNumberUsuarioActual) {
         User user = userRepo.findByPhoneNumber(phoneNumberUsuarioActual)
@@ -89,71 +84,7 @@ public class PacienteService {
         return PacienteMapper.toResponse(paciente);
     }
 
-    @Transactional
-    public ResponsePacienteDto actualizarPerfil
-            (Long id, UpdatePacientePerfilDto dto, String phoneNumberActual) {
 
-        // Opcional: evitar que un paciente modifique a otro
-        User user = userRepo.findByPhoneNumber(phoneNumberActual)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        Paciente paciente = pacienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
-
-        if (paciente.getUser() == null || paciente.getUser().getId() != user.getId()) {
-            throw new RuntimeException("No tienes permiso para modificar este perfil");
-        }
-
-        // Aplicar cambios
-        PacienteMapper.updatePerfil(paciente, dto);
-
-        Paciente actualizado = pacienteRepository.save(paciente);
-
-        return PacienteMapper.toResponse(actualizado);
-    }
-
-    public ResponsePacientePerfilDto obtenerPerfil(String phoneNumberUsuarioActual) {
-        User user = userRepo.findByPhoneNumber(phoneNumberUsuarioActual)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        Paciente paciente = pacienteRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado para este usuario"));
-
-        return PacienteMapper.toPerfilResponse(paciente);
-    }
-
-    public ResponsePacientePerfilDto obtenerPerfilPorId(Long id) {
-        Paciente paciente = pacienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
-
-        return PacienteMapper.toPerfilResponse(paciente);
-    }
-
-
-    @Transactional
-    public ResponsePacientePerfilDto actualizarPerfil(Long id, UpdatePacientePerfilDto dto) {
-        Paciente paciente = pacienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
-
-        if (dto.getNombre() != null)
-            paciente.getUser().setName(dto.getNombre());
-
-        if (dto.getPassword() != null && !dto.getPassword().isBlank())
-            paciente.getUser().setPassword(encoder.encode(dto.getPassword()));
-
-        if (dto.getEdad() != null)
-            paciente.setEdad(dto.getEdad());
-
-        if (dto.getCurp() != null)
-            paciente.setCurp(dto.getCurp());
-
-        if (dto.getEnfermedadesCronicas() != null)
-            paciente.setEnfermedadesCronicas(dto.getEnfermedadesCronicas());
-
-        Paciente guardado = pacienteRepository.save(paciente);
-
-        return PacienteMapper.toPerfilResponse(guardado);
-    }
 
     public void desvincularCuidador(String phoneNumber) {
         User user = userRepo.findByPhoneNumber(phoneNumber)
@@ -165,7 +96,6 @@ public class PacienteService {
         paciente.setCuidador(null);
         pacienteRepository.save(paciente);
     }
-
 
     public void cambiarCuidador(String phoneNumber, String codigoCuidador) {
         User user = userRepo.findByPhoneNumber(phoneNumber)
@@ -181,6 +111,16 @@ public class PacienteService {
         pacienteRepository.save(paciente);
     }
 
+    @Transactional
+    public ResponsePacientePerfilDto actualizarPerfilPaciente(
+            Paciente paciente,
+            UpdatePacientePerfilDto dto
+    ) {
+
+        PacienteMapper.updatePacienteFromDto(dto, paciente);
+
+        return PacienteMapper.toResponsePerfil(paciente);
+    }
 
 
 }

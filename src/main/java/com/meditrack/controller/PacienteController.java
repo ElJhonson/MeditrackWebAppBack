@@ -3,8 +3,6 @@ package com.meditrack.controller;
 import com.meditrack.dto.auth.AuthResponseDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
-import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
-import com.meditrack.dto.paciente.UpdatePacientePerfilDto;
 import com.meditrack.service.JWTService;
 import com.meditrack.service.PacienteService;
 import org.springframework.http.HttpStatus;
@@ -57,23 +55,6 @@ public class PacienteController {
 
         ResponsePacienteDto response = pacienteSrv.obtenerMisDatos(phoneNumber);
         return ResponseEntity.ok(response);
-    }
-
-    @PutMapping("/{id}/perfil")
-    public ResponseEntity<ResponsePacienteDto> actualizarPerfil(
-            @PathVariable Long id,
-            @RequestBody UpdatePacientePerfilDto dto,
-            Authentication auth
-    ) {
-        ResponsePacienteDto response = pacienteSrv.actualizarPerfil(id, dto, auth.getName());
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/perfil")
-    public ResponseEntity<ResponsePacientePerfilDto> obtenerPerfil(Authentication authentication) {
-        String phoneNumber = authentication.getName();
-        ResponsePacientePerfilDto dto = pacienteSrv.obtenerPerfil(phoneNumber);
-        return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/desvincular-cuidador")
