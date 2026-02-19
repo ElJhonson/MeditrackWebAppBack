@@ -63,6 +63,10 @@ public class PacienteMapper {
             paciente.getUser().setName(dto.getNombre());
         }
 
+        if (dto.getPhoneNumber() != null) {
+            paciente.getUser().setPhoneNumber(dto.getPhoneNumber());
+        }
+
         if (dto.getEdad() != null) {
             paciente.setEdad(dto.getEdad());
         }
@@ -75,6 +79,7 @@ public class PacienteMapper {
             paciente.setEnfermedadesCronicas(dto.getEnfermedadesCronicas());
         }
     }
+
 
     public static ResponsePacientePerfilDto toResponsePerfil(Paciente paciente) {
         if (paciente == null) return null;

@@ -8,6 +8,7 @@ import java.util.List;
 public class UpdatePacientePerfilDto {
 
     private String nombre;
+    private String phoneNumber;
     private Integer edad;
     private String curp;
     private List<String> enfermedadesCronicas;
