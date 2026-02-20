@@ -1,7 +1,6 @@
 package com.meditrack.config;
 
 import com.meditrack.filter.JwtFilter;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -50,13 +49,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/cuidadores/registro").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // Privados
-                        .requestMatchers("/pacientes/misdatos").authenticated()
-                        .requestMatchers("/pacientes/**").authenticated()
-                        .requestMatchers("/alarmas/**").authenticated()
-                        .requestMatchers("/medicinas/**").authenticated()
-
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
