@@ -43,17 +43,17 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(request -> request
+                .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/cuidadores/registro").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/pacientes/registro").permitAll()
+                        .requestMatchers("/pacientes/registro").permitAll()
+                        .requestMatchers("/cuidadores/registro").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        .requestMatchers("/pacientes/**").authenticated()
                         .requestMatchers("/alarmas/**").authenticated()
                         .requestMatchers("/medicinas/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/cuidador/registrar-paciente").authenticated()
+                        .requestMatchers("/cuidador/registrar-paciente").authenticated()
+                        .requestMatchers("/pacientes/**").authenticated()
 
                         .anyRequest().authenticated()
                 )
