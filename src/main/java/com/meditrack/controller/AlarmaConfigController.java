@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/alarmas")
-@CrossOrigin("*")
 public class AlarmaConfigController {
 
     private final AlarmaConfigService alarmaConfigService;

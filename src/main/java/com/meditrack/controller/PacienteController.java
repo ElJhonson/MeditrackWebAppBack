@@ -15,7 +15,6 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/pacientes")
-@CrossOrigin("*")
 public class PacienteController {
 
     private final PacienteService pacienteSrv;
