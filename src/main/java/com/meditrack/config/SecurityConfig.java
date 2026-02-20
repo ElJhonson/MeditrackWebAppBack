@@ -1,6 +1,7 @@
 package com.meditrack.config;
 
 import com.meditrack.filter.JwtFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -43,19 +44,24 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(request -> request
+
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cuidadores/registro").permitAll()
                         .requestMatchers(HttpMethod.POST, "/pacientes/registro").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/cuidador/registrar-paciente").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/medicinas/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/medicinas/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/medicinas/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/medicinas/**").authenticated()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         .requestMatchers("/pacientes/**").authenticated()
                         .requestMatchers("/alarmas/**").authenticated()
+                        .requestMatchers("/medicinas/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/cuidador/registrar-paciente").authenticated()
 
-
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        })
+                )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
@@ -63,7 +69,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
         provider.setUserDetailsService(userDetailsService);
