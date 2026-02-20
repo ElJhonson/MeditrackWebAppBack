@@ -25,6 +25,7 @@ public class ContactoController {
         return ResponseEntity.ok(nuevo);
     }
 
+
     @GetMapping("/{pacienteId}")
     public ResponseEntity<List<Contacto>> obtenerContactos(
             @PathVariable Long pacienteId
