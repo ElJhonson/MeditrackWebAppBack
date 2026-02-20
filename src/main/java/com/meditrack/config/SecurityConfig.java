@@ -54,7 +54,6 @@ public class SecurityConfig {
                         .requestMatchers("/medicinas/**").authenticated()
                         .requestMatchers("/cuidador/registrar-paciente").authenticated()
                         .requestMatchers("/pacientes/**").authenticated()
-
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
