@@ -44,10 +44,24 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()   // 🔥 TODO permitido temporalmente
+
+                        // Públicos
+                        .requestMatchers(HttpMethod.POST, "/pacientes/registro").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/cuidadores/registro").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Privados
+                        .requestMatchers("/pacientes/misdatos").authenticated()
+                        .requestMatchers("/pacientes/**").authenticated()
+                        .requestMatchers("/alarmas/**").authenticated()
+                        .requestMatchers("/medicinas/**").authenticated()
+
+                        .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
