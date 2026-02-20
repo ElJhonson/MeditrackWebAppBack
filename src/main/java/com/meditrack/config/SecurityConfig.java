@@ -45,15 +45,18 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
 
+                        // 🔓 PÚBLICOS
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/pacientes/registro").permitAll()
                         .requestMatchers("/cuidadores/registro").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                        // 🔐 PRIVADOS
                         .requestMatchers("/alarmas/**").authenticated()
                         .requestMatchers("/medicinas/**").authenticated()
                         .requestMatchers("/cuidador/registrar-paciente").authenticated()
                         .requestMatchers("/pacientes/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
