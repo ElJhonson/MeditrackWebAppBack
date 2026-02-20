@@ -1,6 +1,5 @@
 package com.meditrack.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meditrack.service.JWTService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,68 +15,55 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
     private final JWTService jwtService;
-    private final ApplicationContext context;
 
     public JwtFilter(JWTService jwtService, ApplicationContext context) {
         this.jwtService = jwtService;
-        this.context = context;
     }
 
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
-        String rol = null;
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-        try {
-            if(authHeader != null && authHeader.startsWith("Bearer")){
-                token = authHeader.substring(7);
-                username = jwtService.extractPhoneNumber(token);
-                rol = jwtService.extractRol(token);
-            }
-        } catch (Exception e) {
-            sendErrorResponse(response, "Access Denied");
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtService.validateToken(token)) {
+        String token = authHeader.substring(7);
 
-                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + rol));
+        try {
+            String username = jwtService.extractPhoneNumber(token);
+            String rol = jwtService.extractRol(token);
+
+            if (username != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null &&
+                    jwtService.validateToken(token)) {
+
+                List<GrantedAuthority> authorities =
+                        List.of(new SimpleGrantedAuthority("ROLE_" + rol));
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(username, null, authorities);
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
+
+        } catch (Exception e) {
         }
 
         filterChain.doFilter(request, response);
     }
 
-
-    private void sendErrorResponse(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now().toString());
-        body.put("status", 401);
-        body.put("error", "Unauthorized");
-        body.put("message", message);
-
-        ObjectMapper mapper = new ObjectMapper();
-        response.getWriter().write(mapper.writeValueAsString(body));
-    }
 }
