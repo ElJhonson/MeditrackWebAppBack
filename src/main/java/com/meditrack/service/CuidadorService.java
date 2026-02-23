@@ -41,7 +41,7 @@ public class CuidadorService {
         if (existente.isPresent()) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "El número ya está registrado"
+                    "El Teléfono ya está registrado"
             );
         }
 

@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private long id;
         private String name;
+        @Column(unique = true, nullable = false)
         private String phoneNumber;
         private String password;
         @Enumerated(EnumType.STRING)

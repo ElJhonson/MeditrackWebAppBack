@@ -13,8 +13,9 @@ import com.meditrack.repository.CuidadorRepository;
 import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -39,7 +40,10 @@ public class PacienteService {
     public AuthResponseDto registrar(RequestPacienteDto dto) {
         Optional<User> existente = userRepo.findByPhoneNumber(dto.getPhoneNumber());
         if (existente.isPresent()) {
-            throw new IllegalStateException("El teléfono ya está registrado");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "El teléfono ya está registrado"
+            );
         }
 
         Cuidador cuidador = null;
@@ -53,7 +57,6 @@ public class PacienteService {
 
         return new AuthResponseDto(accessToken, refreshToken);
     }
-
 
 
     @Transactional
@@ -83,7 +86,6 @@ public class PacienteService {
 
         return PacienteMapper.toResponse(paciente);
     }
-
 
 
     public void desvincularCuidador(String phoneNumber) {
@@ -116,6 +118,27 @@ public class PacienteService {
             Paciente paciente,
             UpdatePacientePerfilDto dto
     ) {
+
+        if (dto.getPhoneNumber() != null) {
+
+            String nuevoTelefono = dto.getPhoneNumber();
+            String telefonoActual = paciente.getUser().getPhoneNumber();
+
+            if (!nuevoTelefono.equals(telefonoActual)) {
+
+                Optional<User> userExistente =
+                        userRepo.findByPhoneNumber(nuevoTelefono);
+
+                if (userExistente.isPresent() &&
+                        userExistente.get().getId() != paciente.getUser().getId()) {
+
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "El teléfono ya está registrado"
+                    );
+                }
+            }
+        }
 
         PacienteMapper.updatePacienteFromDto(dto, paciente);
 
