@@ -79,16 +79,13 @@ public class CuidadorService {
             RequestPacienteDto dto) {
 
         Cuidador cuidador = obtenerCuidador(phoneNumberCuidador);
-
         if (userRepo.findByPhoneNumber(dto.getPhoneNumber()).isPresent()) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "El número ya está registrado"
             );
         }
-
         Paciente paciente = PacienteMapper.toEntity(dto, cuidador);
-
         pacienteRepository.save(paciente);
 
         return PacienteMapper.toResponse(paciente);

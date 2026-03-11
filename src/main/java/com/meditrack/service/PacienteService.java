@@ -1,6 +1,7 @@
 package com.meditrack.service;
 
 import com.meditrack.dto.auth.AuthResponseDto;
+import com.meditrack.dto.cuidador.CuidadorInfoDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
 import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
@@ -12,9 +13,9 @@ import com.meditrack.model.User;
 import com.meditrack.repository.CuidadorRepository;
 import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -45,7 +46,6 @@ public class PacienteService {
                     "El teléfono ya está registrado"
             );
         }
-
         Cuidador cuidador = null;
         Paciente paciente = PacienteMapper.toEntity(dto, cuidador);
         Paciente guardado = pacienteRepository.save(paciente);
@@ -61,20 +61,58 @@ public class PacienteService {
 
     @Transactional
     public void vincularCuidador(String phoneNumberPaciente, String codigo) {
+
         Paciente paciente = userRepo.findByPhoneNumber(phoneNumberPaciente)
                 .map(User::getPaciente)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Paciente no encontrado"));
 
         Cuidador cuidador = cuidadorRepository.findByCodigoVinculacion(codigo)
-                .orElseThrow(() -> new RuntimeException("Código de cuidador no válido"));
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST,
+                                "Código de cuidador no válido"));
 
-        if (paciente.getCuidador() != null && paciente.getCuidador().equals(cuidador)) {
-            throw new RuntimeException("El paciente ya está vinculado a este cuidador");
+        if (paciente.getCuidador() != null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El paciente ya está vinculado a un cuidador");
         }
-        paciente.setCuidador(cuidador);
-        cuidador.getPacientes().add(paciente);
 
-        cuidadorRepository.save(cuidador);
+        paciente.setCuidador(cuidador);
+        pacienteRepository.save(paciente);
+    }
+
+    @Transactional(readOnly=true)
+    public CuidadorInfoDto buscarCuidadorPorCodigo(String codigo) {
+
+        Cuidador cuidador = cuidadorRepository
+                .findByCodigoVinculacion(codigo)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Código de cuidador no válido"
+                ));
+
+        return new CuidadorInfoDto(
+                cuidador.getUser().getName(),
+                cuidador.getUser().getPhoneNumber()
+        );
+    }
+
+    public void desvincularCuidador(String phoneNumber) {
+        User user = userRepo.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() ->
+                        new RuntimeException("Usuario no encontrado"));
+        Paciente paciente = user.getPaciente();
+        if (paciente == null)
+            throw new RuntimeException("El usuario no es un paciente");
+        if (paciente.getCuidador() == null) {
+            throw new RuntimeException("El paciente no tiene cuidador vinculado");
+        }
+        paciente.setCuidador(null);
+        pacienteRepository.save(paciente);
     }
 
     public ResponsePacienteDto obtenerMisDatos(String phoneNumberUsuarioActual) {
@@ -87,17 +125,6 @@ public class PacienteService {
         return PacienteMapper.toResponse(paciente);
     }
 
-
-    public void desvincularCuidador(String phoneNumber) {
-        User user = userRepo.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() ->
-                        new RuntimeException("Usuario no encontrado"));
-        Paciente paciente = user.getPaciente();
-        if (paciente == null)
-            throw new RuntimeException("El usuario no es un paciente");
-        paciente.setCuidador(null);
-        pacienteRepository.save(paciente);
-    }
 
     public void cambiarCuidador(String phoneNumber, String codigoCuidador) {
         User user = userRepo.findByPhoneNumber(phoneNumber)

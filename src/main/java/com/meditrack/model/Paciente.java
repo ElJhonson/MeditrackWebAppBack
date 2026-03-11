@@ -33,8 +33,10 @@ public class Paciente {
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Medicina> medicinas = new ArrayList<>();
 
+    @Column(nullable = false)
     private Integer edad;
 
+    @Column(length = 18)
     private String curp;
 
     @ElementCollection

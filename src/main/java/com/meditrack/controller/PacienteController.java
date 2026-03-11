@@ -1,10 +1,11 @@
 package com.meditrack.controller;
 
 import com.meditrack.dto.auth.AuthResponseDto;
+import com.meditrack.dto.cuidador.CuidadorInfoDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
-import com.meditrack.service.JWTService;
 import com.meditrack.service.PacienteService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -14,16 +15,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/pacientes")
+@RequiredArgsConstructor
 public class PacienteController {
 
     private final PacienteService pacienteSrv;
-    private final JWTService jwtService;
-
-    public PacienteController(PacienteService pacienteSrv, JWTService jwtService) {
-        this.pacienteSrv = pacienteSrv;
-        this.jwtService = jwtService;
-    }
-
 
     @PostMapping("/registro")
     public ResponseEntity<AuthResponseDto> registrar(
@@ -33,29 +28,28 @@ public class PacienteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
-    @PostMapping("/vincular-cuidador")
+    @PostMapping("/cuidador")
     public ResponseEntity<Map<String, String>> vincularCuidador(
             @RequestParam String codigo,
-            @RequestHeader("Authorization") String token) {
-        String phoneNumber = jwtService.extractPhoneNumber
-                (token.replace("Bearer ", ""));
-        pacienteSrv.vincularCuidador(phoneNumber, codigo);
-        return ResponseEntity.ok
-                (Map.of("mensaje", "Paciente vinculado correctamente al cuidador"));
-    }
+            Authentication authentication) {
 
-
-    @GetMapping("/misdatos")
-    public ResponseEntity<ResponsePacienteDto> obtenerMisDatos(Authentication authentication) {
-        // Extrae el número de teléfono del token JWT (sub)
         String phoneNumber = authentication.getName();
+        pacienteSrv.vincularCuidador(phoneNumber, codigo);
 
-        ResponsePacienteDto response = pacienteSrv.obtenerMisDatos(phoneNumber);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                Map.of("mensaje", "Paciente vinculado correctamente al cuidador"));
     }
 
-    @DeleteMapping("/desvincular-cuidador")
+    @GetMapping("/cuidador")
+    public ResponseEntity<CuidadorInfoDto> obtenerCuidadorPorCodigo(
+            @RequestParam String codigo) {
+
+        return ResponseEntity.ok(
+                pacienteSrv.buscarCuidadorPorCodigo(codigo)
+        );
+    }
+
+    @DeleteMapping("/cuidador")
     public ResponseEntity<Map<String, String>>
     desvincularCuidador(Authentication authentication) {
         String phoneNumber = authentication.getName();
@@ -63,6 +57,15 @@ public class PacienteController {
 
         return ResponseEntity.ok
                 (Map.of("mensaje", "Cuidador desvinculado correctamente"));
+    }
+
+    @GetMapping("/misdatos")
+    public ResponseEntity<ResponsePacienteDto> obtenerMisDatos
+            (Authentication authentication) {
+        String phoneNumber = authentication.getName();
+
+        ResponsePacienteDto response = pacienteSrv.obtenerMisDatos(phoneNumber);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/cambiar-cuidador")
@@ -76,6 +79,4 @@ public class PacienteController {
         return ResponseEntity.ok
                 (Map.of("mensaje", "Cuidador actualizado correctamente"));
     }
-
-
 }

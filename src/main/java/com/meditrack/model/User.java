@@ -17,12 +17,15 @@ import lombok.NoArgsConstructor;
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private long id;
+        @Column(name = "nombre_completo")
         private String name;
-        @Column(unique = true, nullable = false)
+        @Column(unique = true, nullable = false, length = 10, name = "telefono")
         private String phoneNumber;
+        @Column(name = "contrasena")
         private String password;
         @Enumerated(EnumType.STRING)
         private Rol rol;
+        @Column(name = "estado")
         @Enumerated(EnumType.STRING)
         private Estado state = Estado.ACTIVO;
 
