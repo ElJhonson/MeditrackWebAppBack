@@ -15,8 +15,10 @@ import com.meditrack.model.User;
 import com.meditrack.repository.CuidadorRepository;
 import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -93,13 +95,17 @@ public class CuidadorService {
 
 
     @Transactional
-    public void desvincularPaciente(Long pacienteId) {
+    public void desvincularPaciente(Long pacienteId, String phoneNumber) {
+
         Paciente paciente = pacienteRepository.findById(pacienteId)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Paciente no encontrado"));
+
+        if (paciente.getCuidador() == null ||
+                !paciente.getCuidador().getUser().getPhoneNumber().equals(phoneNumber)) {
+            throw new AccessDeniedException("No puedes desvincular este paciente");
+        }
 
         paciente.setCuidador(null);
-
-        pacienteRepository.save(paciente);
     }
 
     @Transactional

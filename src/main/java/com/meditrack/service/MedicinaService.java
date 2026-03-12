@@ -9,7 +9,6 @@ import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 
@@ -132,13 +131,12 @@ public class MedicinaService {
     }
 
     @Transactional
-    public void desactivarMedicina(Long id, String username) {
+    public void desactivarMedicina(Long id, String phoneNumber) {
+
         Medicina medicina = medicinaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Medicina no encontrada"));
 
-        if (!medicina.getPaciente().getUser().getPhoneNumber().equals(username)) {
-            throw new AccessDeniedException("No autorizado");
-        }
+        validarAcceso(medicina.getPaciente(), phoneNumber);
 
         medicina.setEstado(Estado.INACTIVO);
     }

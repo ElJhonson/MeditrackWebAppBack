@@ -71,8 +71,15 @@ public class CuidadorController {
     }
 
     @DeleteMapping("/{id}/desvincular")
-    public ResponseEntity<Void> desvincularPaciente(@PathVariable Long id) {
-        cuidadorSrv.desvincularPaciente(id);
+    public ResponseEntity<Void> desvincularPaciente(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token) {
+
+        String jwt = token.replace("Bearer ", "");
+        String phoneNumber = jwtService.extractPhoneNumber(jwt);
+
+        cuidadorSrv.desvincularPaciente(id, phoneNumber);
+
         return ResponseEntity.noContent().build();
     }
 
