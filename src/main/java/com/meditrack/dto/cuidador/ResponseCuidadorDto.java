@@ -13,7 +13,7 @@ public class ResponseCuidadorDto {
     private Long id;
     private String name;
     private String phoneNumber;
-    private String relacionConPaciente;
+    private String ocupacion;
     private String codigoVinculacion;
     private List<String> pacientes;
 }

@@ -37,7 +37,8 @@ public class PacienteController {
         pacienteSrv.vincularCuidador(phoneNumber, codigo);
 
         return ResponseEntity.ok(
-                Map.of("mensaje", "Paciente vinculado correctamente al cuidador"));
+                Map.of("mensaje",
+                        "Paciente vinculado correctamente al cuidador"));
     }
 
     @GetMapping("/cuidador")
@@ -56,7 +57,8 @@ public class PacienteController {
         pacienteSrv.desvincularCuidador(phoneNumber);
 
         return ResponseEntity.ok
-                (Map.of("mensaje", "Cuidador desvinculado correctamente"));
+                (Map.of("mensaje", "Cuidador " +
+                        "desvinculado correctamente"));
     }
 
     @GetMapping("/misdatos")

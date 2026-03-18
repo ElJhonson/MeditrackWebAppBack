@@ -61,44 +61,35 @@ public class PacienteService {
 
     @Transactional
     public void vincularCuidador(String phoneNumberPaciente, String codigo) {
-
         Paciente paciente = userRepo.findByPhoneNumber(phoneNumberPaciente)
                 .map(User::getPaciente)
                 .orElseThrow(() ->
                         new ResponseStatusException(
                                 HttpStatus.NOT_FOUND,
                                 "Paciente no encontrado"));
-
         Cuidador cuidador = cuidadorRepository.findByCodigoVinculacion(codigo)
                 .orElseThrow(() ->
                         new ResponseStatusException(
                                 HttpStatus.BAD_REQUEST,
                                 "Código de cuidador no válido"));
-
         if (paciente.getCuidador() != null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "El paciente ya está vinculado a un cuidador");
         }
-
         paciente.setCuidador(cuidador);
         pacienteRepository.save(paciente);
     }
 
     @Transactional(readOnly=true)
     public CuidadorInfoDto buscarCuidadorPorCodigo(String codigo) {
-
         Cuidador cuidador = cuidadorRepository
-                .findByCodigoVinculacion(codigo)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Código de cuidador no válido"
-                ));
-
+                .findByCodigoVinculacion(codigo).orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Código de cuidador no válido"));
         return new CuidadorInfoDto(
                 cuidador.getUser().getName(),
-                cuidador.getUser().getPhoneNumber()
-        );
+                cuidador.getUser().getPhoneNumber());
     }
 
     public void desvincularCuidador(String phoneNumber) {
@@ -108,9 +99,8 @@ public class PacienteService {
         Paciente paciente = user.getPaciente();
         if (paciente == null)
             throw new RuntimeException("El usuario no es un paciente");
-        if (paciente.getCuidador() == null) {
+        if (paciente.getCuidador() == null)
             throw new RuntimeException("El paciente no tiene cuidador vinculado");
-        }
         paciente.setCuidador(null);
         pacienteRepository.save(paciente);
     }

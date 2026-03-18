@@ -3,6 +3,8 @@ package com.meditrack.service;
 import com.meditrack.dto.auth.AuthResponseDto;
 import com.meditrack.dto.cuidador.RequestCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
+import com.meditrack.dto.cuidador.UpdateCuidadorDto;
+import com.meditrack.dto.cuidador.UpdateCuidadorResponseDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
 import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
@@ -36,6 +38,7 @@ public class CuidadorService {
     private final PacienteService pacienteService;
     private final JWTService jwtService;
 
+
     @Transactional
     public AuthResponseDto registrar(RequestCuidadorDto dto) {
 
@@ -46,7 +49,7 @@ public class CuidadorService {
                     "El Teléfono ya está registrado"
             );
         }
-
+        System.out.println("OCUPACION DTO: " + dto.getOcupacion());
         Cuidador cuidador = CuidadorMapper.toEntity(dto);
 
         User userGuardado = userRepo.save(cuidador.getUser());
@@ -58,6 +61,31 @@ public class CuidadorService {
         String refreshToken = jwtService.generateRefreshToken(userGuardado);
 
         return new AuthResponseDto(accessToken, refreshToken);
+    }
+
+    public UpdateCuidadorResponseDto actualizarCuidador(String phoneNumber, UpdateCuidadorDto dto) {
+
+        Cuidador cuidador = cuidadorRepository.findByUserPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new RuntimeException("Cuidador no encontrado"));
+
+        if (dto.getPhoneNumber() != null &&
+                !dto.getPhoneNumber().equals(cuidador.getUser().getPhoneNumber())) {
+
+            if (userRepo.existsByPhoneNumber(dto.getPhoneNumber())) {
+                throw new RuntimeException("El número ya está en uso");
+            }
+        }
+        boolean requiresReauth = CuidadorMapper.updateEntity(cuidador, dto);
+
+        cuidadorRepository.save(cuidador);
+
+        return new UpdateCuidadorResponseDto(
+                requiresReauth
+                        ? "Teléfono actualizado. Se requiere iniciar sesión nuevamente."
+                        : "Datos actualizados correctamente",
+                requiresReauth,
+                CuidadorMapper.toResponse(cuidador)
+        );
     }
 
 

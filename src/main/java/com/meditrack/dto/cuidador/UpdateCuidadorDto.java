@@ -7,12 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestCuidadorDto {
+public class UpdateCuidadorDto {
     private String name;
     private String phoneNumber;
-    private String password;
-
     private String ocupacion;
-
-
 }

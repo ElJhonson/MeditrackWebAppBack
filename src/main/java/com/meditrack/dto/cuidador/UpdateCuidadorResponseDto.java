@@ -7,12 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestCuidadorDto {
-    private String name;
-    private String phoneNumber;
-    private String password;
-
-    private String ocupacion;
-
-
+public class UpdateCuidadorResponseDto {
+    private String message;
+    private boolean requiresReauth;
+    private ResponseCuidadorDto cuidador;
 }

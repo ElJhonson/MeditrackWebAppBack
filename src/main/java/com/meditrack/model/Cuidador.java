@@ -19,7 +19,7 @@ public class Cuidador {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String relacionConPaciente;
+    private String ocupacion;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "usuario_id")

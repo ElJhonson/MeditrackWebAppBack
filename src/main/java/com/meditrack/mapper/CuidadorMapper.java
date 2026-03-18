@@ -2,6 +2,7 @@ package com.meditrack.mapper;
 
 import com.meditrack.dto.cuidador.RequestCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
+import com.meditrack.dto.cuidador.UpdateCuidadorDto;
 import com.meditrack.model.Cuidador;
 import com.meditrack.model.Rol;
 import com.meditrack.model.User;
@@ -24,7 +25,7 @@ public class CuidadorMapper {
         user.setRol(Rol.CUIDADOR);
 
         Cuidador cuidador = new Cuidador();
-        cuidador.setRelacionConPaciente(dto.getRelacionConPaciente());
+        cuidador.setOcupacion(dto.getOcupacion());
         cuidador.setCodigoVinculacion(generarCodigo());
         cuidador.setUser(user);
 
@@ -40,7 +41,7 @@ public class CuidadorMapper {
         dto.setId(cuidador.getId());
         dto.setName(cuidador.getUser().getName());
         dto.setPhoneNumber(cuidador.getUser().getPhoneNumber());
-        dto.setRelacionConPaciente(cuidador.getRelacionConPaciente());
+        dto.setOcupacion(cuidador.getOcupacion());
         dto.setCodigoVinculacion(cuidador.getCodigoVinculacion());
 
         if (cuidador.getPacientes() != null) {
@@ -53,6 +54,31 @@ public class CuidadorMapper {
         }
 
         return dto;
+    }
+
+    public static boolean updateEntity(Cuidador cuidador, UpdateCuidadorDto dto) {
+        if (cuidador == null || dto == null) return false;
+
+        boolean requiresReauth = false;
+
+        User user = cuidador.getUser();
+
+        if (dto.getPhoneNumber() != null &&
+                !dto.getPhoneNumber().equals(user.getPhoneNumber())) {
+
+            user.setPhoneNumber(dto.getPhoneNumber());
+            requiresReauth = true;
+        }
+
+        if (dto.getName() != null) {
+            user.setName(dto.getName());
+        }
+
+        if (dto.getOcupacion() != null) {
+            cuidador.setOcupacion(dto.getOcupacion());
+        }
+
+        return requiresReauth;
     }
 
     private static String generarCodigo() {

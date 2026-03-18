@@ -3,6 +3,8 @@ package com.meditrack.controller;
 import com.meditrack.dto.auth.AuthResponseDto;
 import com.meditrack.dto.cuidador.RequestCuidadorDto;
 import com.meditrack.dto.cuidador.ResponseCuidadorDto;
+import com.meditrack.dto.cuidador.UpdateCuidadorDto;
+import com.meditrack.dto.cuidador.UpdateCuidadorResponseDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
 import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
@@ -30,6 +32,21 @@ public class CuidadorController {
     ) {
         AuthResponseDto response = cuidadorSrv.registrar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/actualizar")
+    public ResponseEntity<UpdateCuidadorResponseDto> actualizarCuidador(
+            @RequestBody UpdateCuidadorDto dto,
+            @RequestHeader("Authorization") String token
+    ) {
+
+        String jwt = token.replace("Bearer ", "");
+        String phoneNumber = jwtService.extractPhoneNumber(jwt);
+
+        UpdateCuidadorResponseDto response =
+                cuidadorSrv.actualizarCuidador(phoneNumber, dto);
+
+        return ResponseEntity.ok(response);
     }
 
 
