@@ -143,18 +143,19 @@ public class CuidadorService {
             UpdatePacientePerfilDto dto
     ) {
 
-
         Cuidador cuidador = obtenerCuidador(phoneCuidador);
         Paciente paciente = obtenerPaciente(pacienteId);
 
-        if (!paciente.getCuidador().getId().equals(cuidador.getId())) {
+        if (paciente.getCuidador() == null ||
+                !paciente.getCuidador().getId().equals(cuidador.getId())) {
+
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Este paciente no pertenece al cuidador"
             );
         }
 
-        return pacienteService.actualizarPerfilPaciente(paciente, dto);
+        return pacienteService.actualizarPerfilPacienteDesdeCuidador(paciente, dto);
     }
 
     @Transactional(readOnly = true)

@@ -4,6 +4,9 @@ import com.meditrack.dto.auth.AuthResponseDto;
 import com.meditrack.dto.cuidador.CuidadorInfoDto;
 import com.meditrack.dto.paciente.RequestPacienteDto;
 import com.meditrack.dto.paciente.ResponsePacienteDto;
+import com.meditrack.dto.paciente.UpdatePacientePerfilDto;
+import com.meditrack.dto.paciente.UpdatePacientePerfilResponseDto;
+import com.meditrack.service.JWTService;
 import com.meditrack.service.PacienteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,7 @@ import java.util.Map;
 public class PacienteController {
 
     private final PacienteService pacienteSrv;
+    private final JWTService jwtService;
 
     @PostMapping("/registro")
     public ResponseEntity<AuthResponseDto> registrar(
@@ -26,6 +30,20 @@ public class PacienteController {
     ) {
         AuthResponseDto response = pacienteSrv.registrar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/perfil")
+    public ResponseEntity<UpdatePacientePerfilResponseDto> actualizarPerfil(
+            @RequestHeader("Authorization") String token,
+            @RequestBody UpdatePacientePerfilDto dto
+    ) {
+
+        String jwt = token.replace("Bearer ", "");
+        String phoneNumber = jwtService.extractPhoneNumber(jwt);
+
+        return ResponseEntity.ok(
+                pacienteSrv.actualizarPerfilPropio(phoneNumber, dto)
+        );
     }
 
     @PostMapping("/cuidador")
@@ -61,12 +79,12 @@ public class PacienteController {
                         "desvinculado correctamente"));
     }
 
-    @GetMapping("/misdatos")
+    @GetMapping("/perfil")
     public ResponseEntity<ResponsePacienteDto> obtenerMisDatos
             (Authentication authentication) {
         String phoneNumber = authentication.getName();
 
-        ResponsePacienteDto response = pacienteSrv.obtenerMisDatos(phoneNumber);
+        ResponsePacienteDto response = pacienteSrv.obtenerPerfil(phoneNumber);
         return ResponseEntity.ok(response);
     }
 

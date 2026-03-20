@@ -2,10 +2,7 @@ package com.meditrack.service;
 
 import com.meditrack.dto.auth.AuthResponseDto;
 import com.meditrack.dto.cuidador.CuidadorInfoDto;
-import com.meditrack.dto.paciente.RequestPacienteDto;
-import com.meditrack.dto.paciente.ResponsePacienteDto;
-import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
-import com.meditrack.dto.paciente.UpdatePacientePerfilDto;
+import com.meditrack.dto.paciente.*;
 import com.meditrack.mapper.PacienteMapper;
 import com.meditrack.model.Cuidador;
 import com.meditrack.model.Paciente;
@@ -81,12 +78,12 @@ public class PacienteService {
         pacienteRepository.save(paciente);
     }
 
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public CuidadorInfoDto buscarCuidadorPorCodigo(String codigo) {
         Cuidador cuidador = cuidadorRepository
                 .findByCodigoVinculacion(codigo).orElseThrow(() ->
                         new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Código de cuidador no válido"));
+                                "Código de cuidador no válido"));
         return new CuidadorInfoDto(
                 cuidador.getUser().getName(),
                 cuidador.getUser().getPhoneNumber());
@@ -105,7 +102,7 @@ public class PacienteService {
         pacienteRepository.save(paciente);
     }
 
-    public ResponsePacienteDto obtenerMisDatos(String phoneNumberUsuarioActual) {
+    public ResponsePacienteDto obtenerPerfil(String phoneNumberUsuarioActual) {
         User user = userRepo.findByPhoneNumber(phoneNumberUsuarioActual)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -131,36 +128,61 @@ public class PacienteService {
     }
 
     @Transactional
-    public ResponsePacientePerfilDto actualizarPerfilPaciente(
+    public ResponsePacientePerfilDto actualizarPerfilPacienteDesdeCuidador(
             Paciente paciente,
             UpdatePacientePerfilDto dto
     ) {
-
-        if (dto.getPhoneNumber() != null) {
-
-            String nuevoTelefono = dto.getPhoneNumber();
-            String telefonoActual = paciente.getUser().getPhoneNumber();
-
-            if (!nuevoTelefono.equals(telefonoActual)) {
-
-                Optional<User> userExistente =
-                        userRepo.findByPhoneNumber(nuevoTelefono);
-
-                if (userExistente.isPresent() &&
-                        userExistente.get().getId() != paciente.getUser().getId()) {
-
-                    throw new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "El teléfono ya está registrado"
-                    );
-                }
-            }
-        }
+        validarCambioTelefono(paciente, dto.getPhoneNumber());
 
         PacienteMapper.updatePacienteFromDto(dto, paciente);
 
         return PacienteMapper.toResponsePerfil(paciente);
     }
 
+    @Transactional
+    public UpdatePacientePerfilResponseDto actualizarPerfilPropio(
+            String phoneNumber,
+            UpdatePacientePerfilDto dto
+    ) {
+
+        Paciente paciente = pacienteRepository
+                .findByUserPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+
+        validarCambioTelefono(paciente, dto.getPhoneNumber());
+
+        boolean requiresReauth = PacienteMapper.updatePacienteFromDto(dto, paciente);
+
+        userRepo.save(paciente.getUser());
+
+        return new UpdatePacientePerfilResponseDto(
+                requiresReauth
+                        ? "Teléfono actualizado. Se requiere iniciar sesión nuevamente."
+                        : "Perfil actualizado correctamente",
+                requiresReauth,
+                PacienteMapper.toResponsePerfil(paciente)
+        );
+    }
+
+    private void validarCambioTelefono(Paciente paciente, String nuevoTelefono) {
+
+        if (nuevoTelefono == null || nuevoTelefono.isBlank()) return;
+
+        String actual = paciente.getUser().getPhoneNumber();
+
+        if (!nuevoTelefono.equals(actual)) {
+
+            User existente = userRepo.findByPhoneNumber(nuevoTelefono).orElse(null);
+
+            if (existente != null &&
+                    !existente.getId().equals(paciente.getUser().getId())) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "El teléfono ya está registrado"
+                );
+            }
+        }
+    }
 
 }

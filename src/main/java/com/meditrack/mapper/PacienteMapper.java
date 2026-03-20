@@ -46,25 +46,34 @@ public class PacienteMapper {
         dto.setName(paciente.getUser().getName());
         dto.setPhoneNumber(paciente.getUser().getPhoneNumber());
         dto.setEdad(paciente.getEdad());
+        dto.setCurp(paciente.getCurp());
+        dto.setEnfermedadesCronicas(paciente.getEnfermedadesCronicas());
 
         if (paciente.getCuidador() != null && paciente.getCuidador().getUser() != null) {
             dto.setCuidadorName(paciente.getCuidador().getUser().getName());
+            dto.setCodigoCuidador(paciente.getCuidador().getCodigoVinculacion());
         } else {
             dto.setCuidadorName(null);
+            dto.setCodigoCuidador(null);
         }
 
         return dto;
     }
 
-    public static void updatePacienteFromDto(UpdatePacientePerfilDto dto, Paciente paciente) {
-        if (dto == null || paciente == null) return;
+    public static boolean updatePacienteFromDto(UpdatePacientePerfilDto dto, Paciente paciente) {
+        if (dto == null || paciente == null) return false;
+
+        boolean requiresReauth = false;
 
         if (dto.getNombre() != null) {
             paciente.getUser().setName(dto.getNombre());
         }
 
-        if (dto.getPhoneNumber() != null) {
+        if (dto.getPhoneNumber() != null &&
+                !dto.getPhoneNumber().equals(paciente.getUser().getPhoneNumber())) {
+
             paciente.getUser().setPhoneNumber(dto.getPhoneNumber());
+            requiresReauth = true;
         }
 
         if (dto.getEdad() != null) {
@@ -78,8 +87,9 @@ public class PacienteMapper {
         if (dto.getEnfermedadesCronicas() != null) {
             paciente.setEnfermedadesCronicas(dto.getEnfermedadesCronicas());
         }
-    }
 
+        return requiresReauth;
+    }
 
     public static ResponsePacientePerfilDto toResponsePerfil(Paciente paciente) {
         if (paciente == null) return null;
@@ -94,6 +104,4 @@ public class PacienteMapper {
 
         return dto;
     }
-
-
 }

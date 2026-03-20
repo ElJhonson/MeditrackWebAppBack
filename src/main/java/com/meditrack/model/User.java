@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private long id;
+        private Long id;
         @Column(name = "nombre_completo")
         private String name;
         @Column(unique = true, nullable = false, length = 10, name = "telefono")

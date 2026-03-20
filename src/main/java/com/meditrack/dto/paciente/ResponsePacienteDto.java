@@ -14,7 +14,7 @@ public class ResponsePacienteDto {
     private String name;
     private String phoneNumber;
     private String cuidadorName;
-    private List<String> cuidados;
+    private String codigoCuidador;
     private Integer edad;
     private String curp;
     private List<String> enfermedadesCronicas;
