@@ -6,7 +6,6 @@ import com.meditrack.service.MedicinaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 import java.util.List;
 
@@ -30,7 +29,6 @@ public class MedicinaController {
         return ResponseEntity.ok(response);
     }
 
-
     //Paciente ve sus medicinas
     @GetMapping("/mias")
     public ResponseEntity<List<ResponseMedicinaDto>> obtenerMisMedicinas
@@ -45,7 +43,8 @@ public class MedicinaController {
     public ResponseEntity<List<ResponseMedicinaDto>> obtenerMedicinasPaciente(
             @PathVariable Long id,
             Principal principal) {
-        return ResponseEntity.ok(medicinaService.obtenerMedicinasDePaciente(id, principal.getName()));
+        return ResponseEntity.ok(medicinaService.
+                obtenerMedicinasDePaciente(id, principal.getName()));
     }
 
     @GetMapping("/{id}")
@@ -53,7 +52,8 @@ public class MedicinaController {
             @PathVariable Long id,
             Principal principal) {
 
-        return ResponseEntity.ok(medicinaService.obtenerPorId(id, principal.getName()));
+        return ResponseEntity.ok
+                (medicinaService.obtenerPorId(id, principal.getName()));
     }
 
 
@@ -73,7 +73,6 @@ public class MedicinaController {
     public ResponseEntity<Void> eliminarMedicina(
             @PathVariable Long id,
             Principal principal) {
-
         medicinaService.desactivarMedicina(id, principal.getName());
         return ResponseEntity.noContent().build();
     }

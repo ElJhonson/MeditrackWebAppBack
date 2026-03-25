@@ -14,20 +14,20 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "medicines")
+@Table(name = "medicinas")
 public class Medicina {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Column(name = "nombre")
     private String name;
-
+    @Column(name = "forma_farmaceutica")
     private String dosageForm;
 
     @Enumerated(EnumType.STRING)
     private Estado estado = Estado.ACTIVO;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "fecha_expiracion")
     private LocalDate expirationDate;
 
     @ManyToOne(fetch = FetchType.LAZY)

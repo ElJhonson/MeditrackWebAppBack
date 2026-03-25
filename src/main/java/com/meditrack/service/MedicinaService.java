@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class MedicinaService {
@@ -41,20 +42,19 @@ public class MedicinaService {
                     .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
         }
 
-
         if (registradoPor.getRol() == Rol.CUIDADOR) {
             Cuidador cuidador = registradoPor.getCuidador();
             boolean esPacienteDelCuidador = cuidador.getPacientes().stream()
                     .anyMatch(p -> p.getId().equals(paciente.getId()));
             if (!esPacienteDelCuidador) {
-                throw new RuntimeException("No puedes registrar medicinas para un paciente no vinculado");
+                throw new RuntimeException
+                        ("No puedes registrar medicinas para un paciente no vinculado");
             }
         } else if (registradoPor.getRol() == Rol.PACIENTE) {
-            if (!(paciente.getUser().getId() == registradoPor.getId())) {
+            if (!(Objects.equals(paciente.getUser().getId(), registradoPor.getId()))) {
                 throw new RuntimeException("No puedes registrar medicinas para otro paciente");
             }
         }
-
         Medicina medicina = MedicinaMapper.toEntity(dto, paciente, registradoPor);
         Medicina guardada = medicinaRepository.save(medicina);
 
@@ -132,7 +132,6 @@ public class MedicinaService {
 
     @Transactional
     public void desactivarMedicina(Long id, String phoneNumber) {
-
         Medicina medicina = medicinaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Medicina no encontrada"));
 
@@ -144,15 +143,14 @@ public class MedicinaService {
 
     private void validarAcceso(Paciente paciente, User user) {
         if (user.getRol() == Rol.PACIENTE) {
-            if (paciente.getUser().getId()!=(user.getId()))
-                throw new RuntimeException("No puedes gestionar medicinas de otro paciente");
+            if (!Objects.equals(paciente.getUser().getId(), user.getId()))
+                throw new RuntimeException
+                        ("No puedes gestionar medicinas de otro paciente");
         }
-
         if (user.getRol() == Rol.CUIDADOR) {
             Cuidador cuidador = user.getCuidador();
             boolean vinculado = cuidador.getPacientes().stream()
                     .anyMatch(p -> p.getId().equals(paciente.getId()));
-
             if (!vinculado)
                 throw new RuntimeException("Paciente no vinculado al cuidador");
         }
