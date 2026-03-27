@@ -29,7 +29,9 @@ public class MedicinaService {
     }
 
     @Transactional
-    public ResponseMedicinaDto registrarMedicina(RequestMedicinaDto dto, String phoneNumber) {
+    public ResponseMedicinaDto registrarMedicina
+            (RequestMedicinaDto dto, String phoneNumber) {
+
         User registradoPor = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -41,7 +43,6 @@ public class MedicinaService {
             paciente = pacienteRepository.findById(dto.getPacienteId())
                     .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
         }
-
         if (registradoPor.getRol() == Rol.CUIDADOR) {
             Cuidador cuidador = registradoPor.getCuidador();
             boolean esPacienteDelCuidador = cuidador.getPacientes().stream()

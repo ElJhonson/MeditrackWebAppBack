@@ -49,7 +49,6 @@ public class CuidadorService {
                     "El Teléfono ya está registrado"
             );
         }
-        System.out.println("OCUPACION DTO: " + dto.getOcupacion());
         Cuidador cuidador = CuidadorMapper.toEntity(dto);
 
         User userGuardado = userRepo.save(cuidador.getUser());
