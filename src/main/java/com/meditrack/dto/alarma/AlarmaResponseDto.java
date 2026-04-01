@@ -1,9 +1,13 @@
 package com.meditrack.dto.alarma;
 
 import java.time.LocalDateTime;
+
+import com.meditrack.model.EstadoAlarma;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class AlarmaResponseDto {
 
     private Long id;
@@ -14,6 +18,6 @@ public class AlarmaResponseDto {
 
     private LocalDateTime fechaHora;
 
-    private String estado;
+    private EstadoAlarma estado;
     private boolean notificada;
 }

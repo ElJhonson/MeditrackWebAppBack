@@ -20,7 +20,7 @@ public class Medicina {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "nombre")
-    private String name;
+    private String nombre;
     @Column(name = "forma_farmaceutica")
     private String dosageForm;
 

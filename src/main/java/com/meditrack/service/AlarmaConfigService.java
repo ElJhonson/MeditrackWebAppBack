@@ -1,37 +1,31 @@
 package com.meditrack.service;
 
+import com.meditrack.dto.alarma.AlarmaResponseDto;
 import com.meditrack.dto.alarmaconfig.AlarmaConfigRequestDto;
 import com.meditrack.dto.alarmaconfig.AlarmaConfigResponseDto;
+import com.meditrack.service.util.DtoValidator;
+import com.meditrack.service.util.EntidadValidator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.meditrack.mapper.AlarmaConfigMapper;
 import com.meditrack.model.*;
 import com.meditrack.repository.*;
+import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.transaction.Transactional;
-
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AlarmaConfigService {
 
     private final AlarmaConfigRepository alarmaConfigRepository;
     private final AlarmaRepository alarmaRepository;
-    private final MedicinaRepository medicinaRepository;
-    private final UserRepository userRepository;
-
-
-    public AlarmaConfigService(
-            AlarmaConfigRepository alarmaConfigRepository,
-            AlarmaRepository alarmaRepository,
-            MedicinaRepository medicinaRepository, UserRepository userRepository
-    ) {
-        this.alarmaConfigRepository = alarmaConfigRepository;
-        this.alarmaRepository = alarmaRepository;
-        this.medicinaRepository = medicinaRepository;
-        this.userRepository = userRepository;
-    }
+    private final EntidadValidator entidadValidator;
+    private final DtoValidator dtoValidator;
 
     /**
      * Crea una configuración de alarma y genera automáticamente
@@ -43,40 +37,67 @@ public class AlarmaConfigService {
             String phoneNumber
     ) {
 
-        User user = userRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        LocalDateTime ahora = LocalDateTime.now();
 
-        if (user.getRol() != Rol.PACIENTE) {
-            throw new RuntimeException("Solo pacientes pueden crear alarmas");
-        }
+        Paciente paciente = entidadValidator.paciente(phoneNumber);
 
-        Paciente paciente = user.getPaciente();
+        Medicina medicina = entidadValidator.medicinaValida(dto.getMedicinaId(), paciente);
 
-        Medicina medicina = medicinaRepository.findById(dto.getMedicinaId())
-                .orElseThrow(() -> new RuntimeException("Medicina no encontrada"));
-
+        dtoValidator.validarDto(dto);
         AlarmaConfig config = AlarmaConfigMapper.toEntity(dto, medicina);
         config.setPaciente(paciente);
+        config.setActivo(true);
+        config.setCreado(ahora);
 
         alarmaConfigRepository.save(config);
 
-        List<Alarma> alarmas = generarAlarmas(config);
-
+        List<Alarma> alarmas = generarAlarmas(config, ahora);
         alarmaRepository.saveAll(alarmas);
 
         return AlarmaConfigMapper.toResponseDTO(config);
     }
 
-
     /**
      * Genera las alarmas con base en la configuración.
      */
-    private List<Alarma> generarAlarmas(AlarmaConfig config) {
+    private List<Alarma> generarAlarmas(AlarmaConfig config, LocalDateTime ahora) {
+
         List<Alarma> alarmas = new ArrayList<>();
 
-        LocalDateTime fecha = config.getFechaInicio();
+        LocalDateTime fechaInicio = config.getFechaInicio();
+        LocalDateTime fechaFin = config.getFechaFin();
+        if (fechaInicio.isAfter(fechaFin)) {
+            throw new RuntimeException("Rango de fechas inválido");
+        }
+        int frecuenciaHoras = config.getFrecuenciaHoras();
 
-        while (!fecha.isAfter(config.getFechaFin())) {
+        int maxAlarmas = 1000;
+
+        // 2. Cálculo fail-fast (en minutos para precisión)
+        long minutos = Duration.between(fechaInicio, fechaFin).toMinutes();
+        long frecuenciaEnMinutos = frecuenciaHoras * 60L;
+
+        long total = (long) Math.ceil((double) minutos / frecuenciaEnMinutos) + 1;
+
+        if (total > maxAlarmas) {
+            throw new RuntimeException(
+                    "El rango genera demasiadas alarmas, reduce el periodo o aumenta la frecuencia"
+            );
+        }
+
+        // 3. Alinear la primera alarma al presente
+        LocalDateTime fecha = fechaInicio;
+
+        if (fecha.isBefore(ahora)) {
+            long minutosHastaAhora = Duration.between(fecha, ahora).toMinutes();
+
+            long saltos = (long) Math.ceil((double) minutosHastaAhora / frecuenciaEnMinutos);
+
+            fecha = fecha.plusMinutes(saltos * frecuenciaEnMinutos);
+        }
+
+        // 4. Generar alarmas futuras
+        while (!fecha.isAfter(fechaFin)) {
 
             Alarma alarma = new Alarma();
             alarma.setAlarmaConfig(config);
@@ -85,30 +106,22 @@ public class AlarmaConfigService {
             alarma.setFechaHora(fecha);
             alarma.setEstado(EstadoAlarma.PENDIENTE);
             alarma.setNotificada(false);
-            alarma.setCreado(LocalDateTime.now());
+            alarma.setCreado(ahora);
 
             alarmas.add(alarma);
 
-            fecha = fecha.plusHours(config.getFrecuenciaHoras());
+            fecha = fecha.plusMinutes(frecuenciaEnMinutos);
         }
-
         return alarmas;
     }
 
     /**
      * Obtiene todas las configuraciones activas de un paciente.
      */
+    @Transactional(readOnly = true)
     public List<AlarmaConfigResponseDto> obtenerPorPaciente(String phoneNumber) {
 
-        User user = userRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        if (user.getRol() != Rol.PACIENTE) {
-            throw new RuntimeException("Solo los pacientes pueden ver sus alarmas");
-        }
-
-        Paciente paciente = user.getPaciente();
-
+        Paciente paciente = entidadValidator.paciente(phoneNumber);
         List<AlarmaConfig> alarmas =
                 alarmaConfigRepository.findByPacienteIdAndActivoTrue(paciente.getId());
 
@@ -117,4 +130,105 @@ public class AlarmaConfigService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<AlarmaResponseDto> obtenerAlarmasDelDia(String phoneNumber) {
+        Paciente paciente = entidadValidator.paciente(phoneNumber);
+
+        LocalDateTime inicio = LocalDate.now().atStartOfDay();
+        LocalDateTime fin = LocalDate.now().atTime(23, 59, 59, 999999999);
+        List<Alarma> alarmas = alarmaRepository
+                .findAlarmasDelDia(
+                        paciente.getId(),
+                        inicio,
+                        fin
+                );
+        return alarmas.stream()
+                .map(a -> new AlarmaResponseDto(
+                        a.getId(),
+                        a.getAlarmaConfig().getId(),
+                        a.getMedicina().getId(),
+                        a.getMedicina().getNombre(),
+                        a.getFechaHora(),
+                        a.getEstado(),
+                        a.isNotificada()
+                ))
+                .toList();
+    }
+
+    @Transactional
+    public AlarmaConfigResponseDto actualizar(
+            Long configId,
+            AlarmaConfigRequestDto dto,
+            String phoneNumber
+    ) {
+
+        Paciente paciente = entidadValidator.paciente(phoneNumber);
+
+        AlarmaConfig config = entidadValidator.configValida(configId, paciente);
+
+        if (!config.isActivo()) {
+            throw new RuntimeException("La configuración está inactiva");
+        }
+
+        LocalDateTime ahora = LocalDateTime.now();
+
+        dtoValidator.validarDto(dto);
+
+        Medicina medicina = entidadValidator.medicinaValida(dto.getMedicinaId(), paciente);
+
+        alarmaRepository.deleteByAlarmaConfigIdAndFechaHoraGreaterThanEqual(configId, ahora);
+        // actualizar TODA la config
+        config.setMedicina(medicina);
+        config.setFechaInicio(dto.getFechaInicio());
+        config.setFechaFin(dto.getFechaFin());
+        config.setFrecuenciaHoras(dto.getFrecuenciaHoras());
+        config.setActualizado(ahora);
+
+        //regenerar
+        List<Alarma> nuevas = generarAlarmas(config, ahora);
+
+        alarmaRepository.saveAll(nuevas);
+
+        return AlarmaConfigMapper.toResponseDTO(config);
+    }
+
+
+    @Transactional
+    public void eliminar(Long configId, String phoneNumber) {
+
+        Paciente paciente = entidadValidator.paciente(phoneNumber);
+
+        AlarmaConfig config = entidadValidator.configValida(configId, paciente);
+
+        if (!config.isActivo()) {
+            throw new RuntimeException("La configuración ya está eliminada");
+        }
+        config.setActivo(false);
+        LocalDateTime ahora = LocalDateTime.now();
+
+        config.setActualizado(ahora);
+
+        // eliminar futuras alarmas
+        alarmaRepository.deleteByAlarmaConfigIdAndFechaHoraGreaterThanEqual(configId, ahora);
+    }
+
+    @Transactional
+    public void actualizarEstado(
+            Long alarmaId,
+            EstadoAlarma estado,
+            String phoneNumber
+    ) {
+        Paciente paciente = entidadValidator.paciente(phoneNumber);
+
+        Alarma alarma = alarmaRepository.findById(alarmaId)
+                .orElseThrow(() -> new RuntimeException("Alarma no encontrada"));
+
+        if (!alarma.getPaciente().getId().equals(paciente.getId())) {
+            throw new RuntimeException("No autorizado");
+        }
+        if (!alarma.getAlarmaConfig().isActivo()) {
+            throw new RuntimeException("La alarma pertenece a una configuración inactiva");
+        }
+        alarma.setEstado(estado);
+    }
 }
