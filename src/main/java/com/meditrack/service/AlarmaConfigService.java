@@ -155,6 +155,27 @@ public class AlarmaConfigService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<AlarmaConfigResponseDto> obtenerPorMedicinaId(
+            Long medicinaId,
+            String phoneNumber
+    ) {
+
+        Paciente paciente = entidadValidator.paciente(phoneNumber);
+
+        Medicina medicina = entidadValidator.medicinaValida(medicinaId, paciente);
+
+        List<AlarmaConfig> configs =
+                alarmaConfigRepository.findByPacienteIdAndMedicinaIdAndActivoTrue(
+                        paciente.getId(),
+                        medicina.getId()
+                );
+
+        return configs.stream()
+                .map(AlarmaConfigMapper::toResponseDTO)
+                .toList();
+    }
+
     @Transactional
     public AlarmaConfigResponseDto actualizar(
             Long configId,

@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface AlarmaConfigRepository extends JpaRepository<AlarmaConfig, Long> {
     List<AlarmaConfig> findByPacienteIdAndActivoTrue(Long pacienteId);
+    List<AlarmaConfig> findByPacienteIdAndMedicinaIdAndActivoTrue(Long pacienteId, Long medicinaId);
 }

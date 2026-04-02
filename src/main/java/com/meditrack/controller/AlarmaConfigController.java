@@ -79,6 +79,13 @@ public class AlarmaConfigController {
         return ResponseEntity.noContent().build();
     }
 
-
-
+    @GetMapping("/medicina/{medicinaId}")
+    public ResponseEntity<List<AlarmaConfigResponseDto>> obtenerPorMedicina(
+            @PathVariable Long medicinaId,
+            Principal principal
+    ) {
+        return ResponseEntity.ok(
+                alarmaConfigService.obtenerPorMedicinaId(medicinaId, principal.getName())
+        );
+    }
 }
