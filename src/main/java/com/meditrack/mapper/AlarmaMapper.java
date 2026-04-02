@@ -13,9 +13,9 @@ public class AlarmaMapper {
         dto.setId(entity.getId());
         dto.setAlarmaConfigId(entity.getAlarmaConfig().getId());
         dto.setMedicinaId(entity.getMedicina().getId());
-        dto.setMedicinaNombre(entity.getMedicina().getName());
+        dto.setMedicinaNombre(entity.getMedicina().getNombre());
         dto.setFechaHora(entity.getFechaHora());
-        dto.setEstado(entity.getEstado().name());
+        dto.setEstado(entity.getEstado());
         dto.setNotificada(entity.isNotificada());
         return dto;
     }

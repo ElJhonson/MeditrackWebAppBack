@@ -5,9 +5,11 @@ import java.time.LocalDateTime;
 import com.meditrack.model.EstadoAlarma;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class AlarmaResponseDto {
 
     private Long id;

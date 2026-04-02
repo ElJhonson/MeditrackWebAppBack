@@ -123,7 +123,7 @@ public class MedicinaService {
 
         validarAcceso(medicina.getPaciente(), phoneNumber);
 
-        medicina.setName(dto.getNombre());
+        medicina.setNombre(dto.getNombre());
         medicina.setDosageForm(dto.getDosageForm());
         medicina.setExpirationDate(dto.getExpirationDate());
 

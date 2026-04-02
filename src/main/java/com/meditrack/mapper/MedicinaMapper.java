@@ -13,7 +13,7 @@ public class MedicinaMapper {
         if (dto == null) return null;
 
         Medicina medicina = new Medicina();
-        medicina.setName(dto.getNombre());
+        medicina.setNombre(dto.getNombre());
         medicina.setDosageForm(dto.getDosageForm());
         medicina.setExpirationDate(dto.getExpirationDate());
         medicina.setPaciente(paciente);
@@ -36,7 +36,7 @@ public class MedicinaMapper {
 
         ResponseMedicinaDto dto = new ResponseMedicinaDto();
         dto.setId(medicina.getId());
-        dto.setNombre(medicina.getName());
+        dto.setNombre(medicina.getNombre());
         dto.setDosageForm(medicina.getDosageForm());
         dto.setExpirationDate(medicina.getExpirationDate());
         dto.setRegistradoPorNombre(registradoPor);
