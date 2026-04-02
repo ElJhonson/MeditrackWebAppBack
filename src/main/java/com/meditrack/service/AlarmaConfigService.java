@@ -3,8 +3,9 @@ package com.meditrack.service;
 import com.meditrack.dto.alarma.AlarmaResponseDto;
 import com.meditrack.dto.alarmaconfig.AlarmaConfigRequestDto;
 import com.meditrack.dto.alarmaconfig.AlarmaConfigResponseDto;
-import com.meditrack.service.util.DtoValidator;
-import com.meditrack.service.util.EntidadValidator;
+import com.meditrack.exception.BadRequestException;
+import com.meditrack.validation.DtoValidator;
+import com.meditrack.validation.EntidadValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.meditrack.mapper.AlarmaConfigMapper;
@@ -39,11 +40,11 @@ public class AlarmaConfigService {
 
         LocalDateTime ahora = LocalDateTime.now();
 
-        Paciente paciente = entidadValidator.paciente(phoneNumber);
+        dtoValidator.validarDto(dto);
 
+        Paciente paciente = entidadValidator.paciente(phoneNumber);
         Medicina medicina = entidadValidator.medicinaValida(dto.getMedicinaId(), paciente);
 
-        dtoValidator.validarDto(dto);
         AlarmaConfig config = AlarmaConfigMapper.toEntity(dto, medicina);
         config.setPaciente(paciente);
         config.setActivo(true);
@@ -66,9 +67,6 @@ public class AlarmaConfigService {
 
         LocalDateTime fechaInicio = config.getFechaInicio();
         LocalDateTime fechaFin = config.getFechaFin();
-        if (fechaInicio.isAfter(fechaFin)) {
-            throw new RuntimeException("Rango de fechas inválido");
-        }
         int frecuenciaHoras = config.getFrecuenciaHoras();
 
         int maxAlarmas = 1000;
@@ -80,21 +78,12 @@ public class AlarmaConfigService {
         long total = (long) Math.ceil((double) minutos / frecuenciaEnMinutos) + 1;
 
         if (total > maxAlarmas) {
-            throw new RuntimeException(
+            throw new BadRequestException(
                     "El rango genera demasiadas alarmas, reduce el periodo o aumenta la frecuencia"
             );
         }
 
-        // 3. Alinear la primera alarma al presente
         LocalDateTime fecha = fechaInicio;
-
-        if (fecha.isBefore(ahora)) {
-            long minutosHastaAhora = Duration.between(fecha, ahora).toMinutes();
-
-            long saltos = (long) Math.ceil((double) minutosHastaAhora / frecuenciaEnMinutos);
-
-            fecha = fecha.plusMinutes(saltos * frecuenciaEnMinutos);
-        }
 
         // 4. Generar alarmas futuras
         while (!fecha.isAfter(fechaFin)) {
@@ -183,17 +172,15 @@ public class AlarmaConfigService {
             String phoneNumber
     ) {
 
-        Paciente paciente = entidadValidator.paciente(phoneNumber);
+        LocalDateTime ahora = LocalDateTime.now();
+        dtoValidator.validarDto(dto);
 
+        Paciente paciente = entidadValidator.paciente(phoneNumber);
         AlarmaConfig config = entidadValidator.configValida(configId, paciente);
 
         if (!config.isActivo()) {
-            throw new RuntimeException("La configuración está inactiva");
+            throw new BadRequestException("La configuración está inactiva");
         }
-
-        LocalDateTime ahora = LocalDateTime.now();
-
-        dtoValidator.validarDto(dto);
 
         Medicina medicina = entidadValidator.medicinaValida(dto.getMedicinaId(), paciente);
 
@@ -252,4 +239,5 @@ public class AlarmaConfigService {
         }
         alarma.setEstado(estado);
     }
+
 }
