@@ -5,9 +5,12 @@ import com.meditrack.exception.BadRequestException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Component
 public class DtoValidator {
+
+    private static final ZoneId ZONA = ZoneId.of("America/Mexico_City");
 
     public void validarDto(AlarmaConfigRequestDto dto) {
         validarFechas(dto);
@@ -32,7 +35,7 @@ public class DtoValidator {
     }
 
     private void validarFechaInicioNoPasada(LocalDateTime fechaInicio) {
-        LocalDateTime ahora = LocalDateTime.now()
+        LocalDateTime ahora = LocalDateTime.now(ZONA)
                 .withSecond(0)
                 .withNano(0);
 

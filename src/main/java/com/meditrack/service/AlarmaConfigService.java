@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class AlarmaConfigService {
             String phoneNumber
     ) {
 
-        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Mexico_City"));
 
         dtoValidator.validarDto(dto);
 
@@ -112,7 +113,7 @@ public class AlarmaConfigService {
 
         Paciente paciente = entidadValidator.paciente(phoneNumber);
         List<AlarmaConfig> alarmas =
-                alarmaConfigRepository.findByPacienteIdAndActivoTrue(paciente.getId());
+                alarmaConfigRepository.findActivasVigentes( paciente.getId());
 
         return alarmas.stream()
                 .map(AlarmaConfigMapper::toResponseDTO)
@@ -123,8 +124,10 @@ public class AlarmaConfigService {
     public List<AlarmaResponseDto> obtenerAlarmasDelDia(String phoneNumber) {
         Paciente paciente = entidadValidator.paciente(phoneNumber);
 
-        LocalDateTime inicio = LocalDate.now().atStartOfDay();
-        LocalDateTime fin = LocalDate.now().atTime(23, 59, 59, 999999999);
+        ZoneId zone = ZoneId.of("America/Mexico_City");
+
+        LocalDateTime inicio = LocalDate.now(zone).atStartOfDay();
+        LocalDateTime fin = LocalDate.now(zone).atTime(23,59,59,999999999);
         List<Alarma> alarmas = alarmaRepository
                 .findAlarmasDelDia(
                         paciente.getId(),
@@ -155,7 +158,7 @@ public class AlarmaConfigService {
         Medicina medicina = entidadValidator.medicinaValida(medicinaId, paciente);
 
         List<AlarmaConfig> configs =
-                alarmaConfigRepository.findByPacienteIdAndMedicinaIdAndActivoTrue(
+                alarmaConfigRepository.findActivasVigentesPorMedicina(
                         paciente.getId(),
                         medicina.getId()
                 );
@@ -172,7 +175,7 @@ public class AlarmaConfigService {
             String phoneNumber
     ) {
 
-        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Mexico_City"));
         dtoValidator.validarDto(dto);
 
         Paciente paciente = entidadValidator.paciente(phoneNumber);
@@ -212,7 +215,7 @@ public class AlarmaConfigService {
             throw new RuntimeException("La configuración ya está eliminada");
         }
         config.setActivo(false);
-        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Mexico_City"));
 
         config.setActualizado(ahora);
 
@@ -239,5 +242,4 @@ public class AlarmaConfigService {
         }
         alarma.setEstado(estado);
     }
-
 }

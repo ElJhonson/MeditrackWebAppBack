@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,6 +16,7 @@ public interface AlarmaRepository extends JpaRepository<Alarma, Long> {
     JOIN FETCH a.alarmaConfig c
     WHERE a.paciente.id = :pacienteId
     AND c.activo = true
+    AND (c.fechaFin IS NULL OR c.fechaFin > CURRENT_TIMESTAMP)
     AND a.fechaHora BETWEEN :inicio AND :fin
     ORDER BY a.fechaHora ASC
 """)
