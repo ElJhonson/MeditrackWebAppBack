@@ -38,7 +38,11 @@ public class Medicina {
     @JoinColumn(name = "registrado_por_id")
     private User registradoPor;
 
-    @OneToMany(mappedBy = "medicina")
+    @OneToMany(
+            mappedBy = "medicina",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @JsonIgnore
     private List<AlarmaConfig> alarmasConfig = new ArrayList<>();
 

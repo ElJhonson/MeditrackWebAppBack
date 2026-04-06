@@ -139,6 +139,8 @@ public class MedicinaService {
         validarAcceso(medicina.getPaciente(), phoneNumber);
 
         medicina.setEstado(Estado.INACTIVO);
+        medicina.getAlarmasConfig().clear();
+
     }
 
 

@@ -24,7 +24,7 @@ public class AlarmaConfig {
     @JoinColumn(name = "paciente_id", nullable = false)
     private Paciente paciente;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medicina_id", nullable = false)
     private Medicina medicina;
 
