@@ -5,9 +5,6 @@ import com.meditrack.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -18,15 +15,10 @@ public class UserService {
     private final AuthenticationManager authManager;
     private final JWTService jwtService;
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder encoder;
-    private final UserDetailsService userDetailsService;
 
     public UserService(AuthenticationManager authManager,
                        JWTService jwtService,
-                       UserRepository userRepository,
-                       UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-        this.encoder = new BCryptPasswordEncoder(12);
+                       UserRepository userRepository) {
         this.authManager = authManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
@@ -52,7 +44,6 @@ public class UserService {
     public String refreshAccessToken(String refreshToken) {
         String correo = jwtService.extractPhoneNumber(refreshToken);
         User user = userRepository.findByPhoneNumber(correo).orElseThrow();
-        UserDetails userDetails = userDetailsService.loadUserByUsername(correo);
 
         if (!jwtService.validateToken(refreshToken)) {
             throw new RuntimeException("Refresh token invalido o expirado");
@@ -61,4 +52,3 @@ public class UserService {
         return jwtService.generateToken(user);
     }
 }
-    
