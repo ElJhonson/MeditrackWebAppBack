@@ -249,5 +249,6 @@ public class AlarmaConfigService {
         }
 
         alarma.setEstado(estado);
+        alarma.setNotificada(true);
     }
 }
