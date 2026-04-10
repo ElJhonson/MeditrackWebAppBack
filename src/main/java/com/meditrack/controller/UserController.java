@@ -18,7 +18,6 @@ public class UserController {
         this.userService = userService;
     }
 
-
     @PostMapping("/acceder")
     public Map<String, String> login(@RequestBody User user){
         return userService.acceder(user);
