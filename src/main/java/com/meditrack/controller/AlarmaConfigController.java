@@ -35,17 +35,27 @@ public class AlarmaConfigController {
 
     @GetMapping("/mias")
     public ResponseEntity<List<AlarmaConfigResponseDto>> obtenerAlarmasConfig(
-            Principal principal) {
-
+            @RequestParam(required = false) Long pacienteId,
+            Principal principal
+    ) {
         return ResponseEntity.ok(
-                alarmaConfigService.obtenerPorPaciente(principal.getName())
+                alarmaConfigService.obtenerPorPaciente(
+                        principal.getName(),
+                        pacienteId
+                )
         );
     }
 
     @GetMapping("/hoy")
-    public ResponseEntity<List<AlarmaResponseDto>> obtenerHoy(Principal principal) {
+    public ResponseEntity<List<AlarmaResponseDto>> obtenerHoy(
+            @RequestParam(required = false) Long pacienteId,
+            Principal principal
+    ) {
         return ResponseEntity.ok(
-                alarmaConfigService.obtenerAlarmasDelDia(principal.getName())
+                alarmaConfigService.obtenerAlarmasDelDia(
+                        principal.getName(),
+                        pacienteId
+                )
         );
     }
 
@@ -82,10 +92,15 @@ public class AlarmaConfigController {
     @GetMapping("/medicina/{medicinaId}")
     public ResponseEntity<List<AlarmaConfigResponseDto>> obtenerPorMedicina(
             @PathVariable Long medicinaId,
+            @RequestParam(required = false) Long pacienteId,
             Principal principal
     ) {
         return ResponseEntity.ok(
-                alarmaConfigService.obtenerPorMedicinaId(medicinaId, principal.getName())
+                alarmaConfigService.obtenerPorMedicinaId(
+                        medicinaId,
+                        principal.getName(),
+                        pacienteId
+                )
         );
     }
 }

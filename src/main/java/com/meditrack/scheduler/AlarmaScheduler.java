@@ -21,7 +21,8 @@ public class AlarmaScheduler {
     @Transactional
     public void desactivarAlarmasExpiradas() {
 
-        LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Mexico_City"));
+        LocalDateTime ahora = LocalDateTime
+                .now(ZoneId.of("America/Mexico_City"));
 
         int actualizadas = repository.desactivarExpiradas(ahora);
 

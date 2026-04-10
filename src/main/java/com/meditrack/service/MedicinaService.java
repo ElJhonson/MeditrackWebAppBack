@@ -5,57 +5,30 @@ import com.meditrack.dto.medicina.ResponseMedicinaDto;
 import com.meditrack.mapper.MedicinaMapper;
 import com.meditrack.model.*;
 import com.meditrack.repository.MedicinaRepository;
-import com.meditrack.repository.PacienteRepository;
 import com.meditrack.repository.UserRepository;
+import com.meditrack.validation.EntidadValidator;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class MedicinaService {
 
     private final MedicinaRepository medicinaRepository;
-    private final PacienteRepository pacienteRepository;
     private final UserRepository userRepository;
-
-    public MedicinaService(MedicinaRepository medicinaRepository,
-                           PacienteRepository pacienteRepository,
-                           UserRepository userRepository) {
-        this.medicinaRepository = medicinaRepository;
-        this.pacienteRepository = pacienteRepository;
-        this.userRepository = userRepository;
-    }
+    private final EntidadValidator entidadValidator;
 
     @Transactional
     public ResponseMedicinaDto registrarMedicina
             (RequestMedicinaDto dto, String phoneNumber) {
 
-        User registradoPor = userRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User registradoPor = entidadValidator.usuario(phoneNumber);
 
-        Paciente paciente;
+        Paciente paciente = entidadValidator.resolverPaciente(registradoPor, dto.getPacienteId());
 
-        if (registradoPor.getRol() == Rol.PACIENTE) {
-            paciente = registradoPor.getPaciente();
-        } else {
-            paciente = pacienteRepository.findById(dto.getPacienteId())
-                    .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
-        }
-        if (registradoPor.getRol() == Rol.CUIDADOR) {
-            Cuidador cuidador = registradoPor.getCuidador();
-            boolean esPacienteDelCuidador = cuidador.getPacientes().stream()
-                    .anyMatch(p -> p.getId().equals(paciente.getId()));
-            if (!esPacienteDelCuidador) {
-                throw new RuntimeException
-                        ("No puedes registrar medicinas para un paciente no vinculado");
-            }
-        } else if (registradoPor.getRol() == Rol.PACIENTE) {
-            if (!(Objects.equals(paciente.getUser().getId(), registradoPor.getId()))) {
-                throw new RuntimeException("No puedes registrar medicinas para otro paciente");
-            }
-        }
         Medicina medicina = MedicinaMapper.toEntity(dto, paciente, registradoPor);
         Medicina guardada = medicinaRepository.save(medicina);
 
@@ -143,27 +116,9 @@ public class MedicinaService {
 
     }
 
-
-    private void validarAcceso(Paciente paciente, User user) {
-        if (user.getRol() == Rol.PACIENTE) {
-            if (!Objects.equals(paciente.getUser().getId(), user.getId()))
-                throw new RuntimeException
-                        ("No puedes gestionar medicinas de otro paciente");
-        }
-        if (user.getRol() == Rol.CUIDADOR) {
-            Cuidador cuidador = user.getCuidador();
-            boolean vinculado = cuidador.getPacientes().stream()
-                    .anyMatch(p -> p.getId().equals(paciente.getId()));
-            if (!vinculado)
-                throw new RuntimeException("Paciente no vinculado al cuidador");
-        }
-    }
-
     private void validarAcceso(Paciente paciente, String phoneNumber) {
-        User user = userRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        validarAcceso(paciente, user);
+        User user = entidadValidator.usuario(phoneNumber);
+        entidadValidator.validarAcceso(paciente, user);
     }
 
 }

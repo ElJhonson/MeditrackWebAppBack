@@ -32,6 +32,7 @@ public class DtoValidator {
         if (dto.getFrecuenciaHoras() > 24) {
             throw new BadRequestException("Frecuencia demasiado alta");
         }
+
     }
 
     private void validarFechaInicioNoPasada(LocalDateTime fechaInicio) {
@@ -47,4 +48,6 @@ public class DtoValidator {
             throw new BadRequestException("La fecha y hora de inicio no puede ser menor a la actual");
         }
     }
+
+
 }
