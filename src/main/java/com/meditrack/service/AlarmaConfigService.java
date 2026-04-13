@@ -149,6 +149,7 @@ public class AlarmaConfigService {
                         a.getAlarmaConfig().getId(),
                         a.getMedicina().getId(),
                         a.getMedicina().getNombre(),
+                        a.getMedicina().getDosageForm(),
                         a.getFechaHora(),
                         a.getEstado(),
                         a.isNotificada()

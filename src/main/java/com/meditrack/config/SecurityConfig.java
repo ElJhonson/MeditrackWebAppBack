@@ -77,6 +77,7 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:*",
                 "http://127.0.0.1:*",
+                "http://10.0.2.2:*",
                 "https://meditrackapp.onrender.com"
         ));
 
@@ -85,7 +86,8 @@ public class SecurityConfig {
                 "POST",
                 "PUT",
                 "DELETE",
-                "OPTIONS"
+                "OPTIONS",
+                "PATCH"
         ));
 
         configuration.setAllowedHeaders(List.of("*"));

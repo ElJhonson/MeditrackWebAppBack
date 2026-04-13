@@ -11,15 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AlarmaResponseDto {
-
     private Long id;
-
     private Long alarmaConfigId;
     private Long medicinaId;
     private String medicinaNombre;
-
+    private String dosageForm;
     private LocalDateTime fechaHora;
-
     private EstadoAlarma estado;
     private boolean notificada;
 }
