@@ -23,7 +23,6 @@ public class UserController {
         return userService.acceder(user);
     }
 
-
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");

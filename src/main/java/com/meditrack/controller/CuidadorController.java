@@ -11,6 +11,7 @@ import com.meditrack.dto.paciente.ResponsePacientePerfilDto;
 import com.meditrack.dto.paciente.UpdatePacientePerfilDto;
 import com.meditrack.service.CuidadorService;
 import com.meditrack.service.JWTService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class CuidadorController {
 
     @PostMapping("/registro")
     public ResponseEntity<AuthResponseDto> registrar(
-            @RequestBody RequestCuidadorDto dto
+            @Valid @RequestBody RequestCuidadorDto dto
     ) {
         AuthResponseDto response = cuidadorSrv.registrar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
