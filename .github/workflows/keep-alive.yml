@@ -14,7 +14,7 @@ jobs:
           response=$(curl -s -o /dev/null -w "%{http_code}" \
             --max-time 30 \
             -X GET \
-            https://TU-APP.onrender.com/ping)
+            https://meditrackwebappback.onrender.com/ping)
           
           echo "Status: $response"
           
