@@ -45,10 +45,6 @@ public class Paciente {
     private List<String> enfermedadesCronicas = new ArrayList<>();
 
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Contacto> contactos = new ArrayList<>();
-
-
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<AlarmaConfig> alarmasConfig = new ArrayList<>();
 

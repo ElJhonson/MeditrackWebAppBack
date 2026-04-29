@@ -1,0 +1,25 @@
+name: Keep Alive - MediTrackApp
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping MediTrackApp
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 30 \
+            -X GET \
+            https://TU-APP.onrender.com/ping)
+          
+          echo "Status: $response"
+          
+          if [ "$response" = "200" ]; then
+            echo "✅ API activa"
+          else
+            echo "⚠️ Status inesperado: $response"
+          fi
