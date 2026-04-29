@@ -89,7 +89,7 @@ public class SecurityConfig {
                 "http://localhost:*",
                 "http://127.0.0.1:*",
                 "http://10.0.2.2:*",
-                "https://meditrackapp.onrender.com"
+                "https://meditrackwebappfront.onrender.com"
         ));
 
         configuration.setAllowedMethods(List.of(
