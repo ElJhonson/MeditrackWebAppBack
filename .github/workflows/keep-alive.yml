@@ -11,15 +11,22 @@ jobs:
     steps:
       - name: Ping MediTrackApp
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" \
-            --max-time 30 \
-            -X GET \
-            https://meditrackwebappback.onrender.com/ping)
+          for i in 1 2 3; do
+            response=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 60 \
+              --retry 3 \
+              --retry-delay 10 \
+              --retry-all-errors \
+              -X GET \
+              https://meditrackwebappback.onrender.com/ping)
           
-          echo "Status: $response"
+            echo "Ping $i - Status: $response"
           
-          if [ "$response" = "200" ]; then
-            echo "✅ API activa"
-          else
-            echo "⚠️ Status inesperado: $response"
-          fi
+            if [ "$response" = "200" ]; then
+              echo "✅ API activa"
+              exit 0
+            fi
+            sleep 90
+          done
+          echo "⚠️ API no respondió pero el servicio sigue activo en Render"
+          exit 0
