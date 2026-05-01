@@ -252,4 +252,46 @@ public class AlarmaConfigService {
         alarma.setEstado(estado);
         alarma.setNotificada(true);
     }
+
+    @Transactional(readOnly = true)
+    public List<AlarmaResponseDto> obtenerHistorial(
+            String phoneNumber,
+            Long pacienteId,
+            LocalDate fechaInicio,
+            LocalDate fechaFin
+    ) {
+        User user = entidadValidator.usuario(phoneNumber);
+        Paciente paciente = entidadValidator.resolverPaciente(user, pacienteId);
+
+        ZoneId zone = ZoneId.of("America/Mexico_City");
+
+        LocalDateTime inicio = (fechaInicio != null
+                ? fechaInicio
+                : LocalDate.now(zone).minusDays(6))
+                .atStartOfDay();
+
+        LocalDateTime fin = (fechaFin != null
+                ? fechaFin
+                : LocalDate.now(zone))
+                .atTime(23, 59, 59, 999999999);
+
+        List<Alarma> alarmas = alarmaRepository.findHistorial(
+                paciente.getId(),
+                inicio,
+                fin
+        );
+
+        return alarmas.stream()
+                .map(a -> new AlarmaResponseDto(
+                        a.getId(),
+                        a.getAlarmaConfig().getId(),
+                        a.getMedicina().getId(),
+                        a.getMedicina().getNombre(),
+                        a.getMedicina().getDosageForm(),
+                        a.getFechaHora(),
+                        a.getEstado(),
+                        a.isNotificada()
+                ))
+                .toList();
+    }
 }

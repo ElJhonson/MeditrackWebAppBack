@@ -5,10 +5,12 @@ import com.meditrack.dto.alarmaconfig.AlarmaConfigRequestDto;
 import com.meditrack.dto.alarmaconfig.AlarmaConfigResponseDto;
 import com.meditrack.model.EstadoAlarma;
 import com.meditrack.service.AlarmaConfigService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -100,6 +102,25 @@ public class AlarmaConfigController {
                         medicinaId,
                         principal.getName(),
                         pacienteId
+                )
+        );
+    }
+
+    @GetMapping("/historial")
+    public ResponseEntity<List<AlarmaResponseDto>> obtenerHistorial(
+            @RequestParam(required = false) Long pacienteId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+            Principal principal
+    ) {
+        return ResponseEntity.ok(
+                alarmaConfigService.obtenerHistorial(
+                        principal.getName(),
+                        pacienteId,
+                        fechaInicio,
+                        fechaFin
                 )
         );
     }
