@@ -42,4 +42,14 @@ public interface AlarmaConfigRepository extends JpaRepository<AlarmaConfig, Long
     """)
     int desactivarExpiradas(@Param("ahora") LocalDateTime ahora);
 
+    @Modifying
+    @Transactional
+    @Query("""
+    UPDATE Alarma a
+    SET a.estado = 'OMITIDA',
+        a.notificada = true
+    WHERE a.estado = 'PENDIENTE'
+    AND a.fechaHora <= :ahora
+""")
+    int omitirPendientesPasadas(@Param("ahora") LocalDateTime ahora);
 }
