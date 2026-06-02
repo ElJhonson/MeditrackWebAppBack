@@ -208,7 +208,7 @@ The API is deployed on **[Render](https://render.com)** and connected to a **[Ne
 ## 👤 Author
 
 **Luis Angel Alvarez Martinez**
-📧 [luisangel.alvarezmtzgmail.com](mailto:luisangel.alvarezmtzgmail.com)
+📧 [luisangel.alvarezmtz@gmail.com](mailto:luisangel.alvarezmtz@gmail.com)
 
 ---
 
