@@ -205,6 +205,13 @@ The API is deployed on **[Render](https://render.com)** and connected to a **[Ne
 
 ---
 
+## 👤 Author
+
+**Luis Angel Alvarez Martinez**
+📧 [luisangel.alvarezmtzgmail.com](mailto:luisangel.alvarezmtzgmail.com)
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License.
