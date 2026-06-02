@@ -195,7 +195,7 @@ This project uses **GitHub Actions** for automated builds and deployments. The p
 
 The API is deployed on **[Render](https://render.com)** and connected to a **[Neon](https://neon.tech)** serverless PostgreSQL database.
 
-> 🔗 Live API: `https://your-app.onrender.com` *(update with your actual URL)*
+> 🔗 Live API: `https://meditrackwebappback.onrender.com/` 
 
 ---
 
